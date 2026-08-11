@@ -1337,7 +1337,12 @@
                 console.error("Firestore save error: ", err);
             }
 
-            window.open(generateReceiptUrl(nm), '_blank');
+            try {
+                const receiptUrl = generateReceiptUrl(nm);
+                window.open(receiptUrl, '_blank');
+            } catch (popError) {
+                console.warn("Popup blocked by browser. Receipt link was not opened automatically.", popError);
+            }
             saveMembersAndTransactions();
             closeAddMemberModal();
         }
