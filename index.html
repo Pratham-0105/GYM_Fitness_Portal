@@ -324,7 +324,7 @@
             </div>
 
             <!-- Login Form -->
-            <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4 text-xs">
+            <form id="loginForm" class="space-y-4 text-xs">
                 <div>
                     <label class="block font-extrabold text-slate-300 mb-1.5 uppercase tracking-wider text-[10px]">Admin ID *</label>
                     <div class="relative flex items-center">
@@ -583,7 +583,7 @@
                 <button onclick="closeAddMemberModal()" class="text-slate-400 hover:text-white text-2xl font-bold p-1">&times;</button>
             </div>
             
-            <form id="addMemberForm" onsubmit="handleFormSubmit(event)" class="space-y-3.5 text-xs">
+            <form id="addMemberForm" class="space-y-3.5 text-xs">
                 <input type="hidden" id="editMemberId" value="">
                 
                 <div>
@@ -781,7 +781,7 @@
                 <button onclick="closeAddExpenseModal()" class="text-slate-400 hover:text-white text-2xl font-bold p-1">&times;</button>
             </div>
             
-            <form id="addExpenseForm" onsubmit="handleAddExpense(event)" class="space-y-3.5 text-xs">
+            <form id="addExpenseForm" class="space-y-3.5 text-xs">
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">Description *</label>
                     <input type="text" id="expenseDesc" required placeholder="e.g. Light Bill, Water Cans, Machine Maintenance" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
@@ -818,7 +818,7 @@
                 <button onclick="closeRenewModal()" class="text-slate-400 hover:text-white text-2xl font-bold p-1">&times;</button>
             </div>
             
-            <form id="renewForm" onsubmit="handleRenewSubmit(event)" class="space-y-3.5 text-xs">
+            <form id="renewForm" class="space-y-3.5 text-xs">
                 <input type="hidden" id="renewMemberId" value="">
                 
                 <div>
@@ -1634,6 +1634,12 @@
         window.togglePasswordVisibility = togglePasswordVisibility;
         window.toggleHeaderMenu = toggleHeaderMenu;
         window.onMonthSelectChange = onMonthSelectChange;
+        window.filterByStatusAndSwitchTab = filterByStatusAndSwitchTab;
+        window.setStatusFilter = setStatusFilter;
+        window.openRenewModal = openRenewModal;
+        window.closeRenewModal = closeRenewModal;
+        window.deleteMember = deleteMember;
+        window.deleteExpense = deleteExpense;
 
         // Form listeners
         document.getElementById('loginForm').onsubmit = handleLoginSubmit;
