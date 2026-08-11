@@ -651,7 +651,7 @@
 
                 <div class="flex space-x-2.5 pt-2">
                     <button type="button" onclick="closeAddMemberModal()" class="flex-1 py-3.5 rounded-xl text-slate-400 font-bold btn-3d bg-obsidian-900">Cancel</button>
-                    <button type="submit" id="saveSubmitBtn" class="flex-1 py-3.5 gold-gradient text-obsidian-950 font-black rounded-xl gold-glow">Save & Send Receipt</button>
+                    <button type="submit" id="saveSubmitBtn" class="flex-1 py-3.5 gold-gradient text-obsidian-950 font-black rounded-xl gold-glow">Save Pass</button>
                 </div>
             </form>
         </div>
@@ -847,7 +847,7 @@
 
                 <div class="flex space-x-2.5 pt-2">
                     <button type="button" onclick="closeRenewModal()" class="flex-1 py-3.5 rounded-xl text-slate-400 font-bold btn-3d bg-obsidian-900">Cancel</button>
-                    <button type="submit" class="flex-1 py-3.5 font-black rounded-xl" style="background: linear-gradient(135deg, #10B981, #059669); color: #050810; box-shadow: 0 4px 14px -3px rgba(16,185,129,0.5);">Renew & Send Receipt</button>
+                    <button type="submit" class="flex-1 py-3.5 font-black rounded-xl" style="background: linear-gradient(135deg, #10B981, #059669); color: #050810; box-shadow: 0 4px 14px -3px rgba(16,185,129,0.5);">Renew Member</button>
                 </div>
             </form>
         </div>
@@ -1273,7 +1273,7 @@
         function closeAddMemberModal() {
             const sh = document.getElementById('memberModalSheet');
             sh.classList.remove('bottom-sheet-visible'); sh.classList.add('bottom-sheet-hidden');
-            setTimeout(() => { document.getElementById('memberModalOverlay').classList.add('hidden'); document.getElementById('addMemberForm').reset(); document.getElementById('editMemberId').value = ''; document.getElementById('modalTitle').innerText = 'New Member Pass'; document.getElementById('saveSubmitBtn').innerText = 'Save & Send Receipt'; currentPhotoData = ''; document.getElementById('photoPreview').innerHTML = 'No Pic'; }, 350);
+            setTimeout(() => { document.getElementById('memberModalOverlay').classList.add('hidden'); document.getElementById('addMemberForm').reset(); document.getElementById('editMemberId').value = ''; document.getElementById('modalTitle').innerText = 'New Member Pass'; document.getElementById('saveSubmitBtn').innerText = 'Save Pass'; currentPhotoData = ''; document.getElementById('photoPreview').innerHTML = 'No Pic'; }, 350);
         }
         function toggleQRModal(show) {
             const ov = document.getElementById('qrModalOverlay'), sh = document.getElementById('qrModalSheet');
@@ -1337,12 +1337,6 @@
                 console.error("Firestore save error: ", err);
             }
 
-            try {
-                const receiptUrl = generateReceiptUrl(nm);
-                window.open(receiptUrl, '_blank');
-            } catch (popError) {
-                console.warn("Popup blocked by browser. Receipt link was not opened automatically.", popError);
-            }
             saveMembersAndTransactions();
             closeAddMemberModal();
         }
@@ -1398,12 +1392,6 @@
 
             saveMembersAndTransactions();
             closeRenewModal();
-
-            if (rm) {
-                const monthText = months === 12 ? '1 Year' : `${months} Month${months > 1 ? 's' : ''}`;
-                const msg = `🎉 *RENEWED - Arya Fitness Club Shirpur* 🎉\n\nHi ${rm.name}!\n\nMembership renewed for *${monthText}*!\n⏳ *New Expiry:* ${rm.expiryDate}\n💳 *Paid:* ₹${amount} (${method})\n\nKeep grinding! 💪🔥`;
-                window.open(buildWhatsAppLink(rm.phone, msg), '_blank');
-            }
         }
 
         async function deleteMember(id) {
