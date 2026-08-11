@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#050810">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Arya Fitness Club - Royal Luxury Portal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: {
+                            950: '#050810',
+                            900: '#0A0F1E',
+                            800: '#111830',
+                            700: '#1A2340',
+                        },
+                        gold: {
+                            300: '#FDE68A',
+                            400: '#FBBF24',
+                            500: '#F59E0B',
+                            600: '#D97706',
+                            700: '#B45309',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        input, select, textarea {
+            user-select: auto;
+        }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #050810;
+            color: #f8fafc;
+            overflow-x: hidden;
+            padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+        }
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(245, 158, 11, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 40% at 10% 90%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+            pointer-events: none; z-index: 0;
+        }
+        main, header, nav { position: relative; z-index: 1; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* ===== 3D CARD SYSTEM ===== */
+        .card-3d {
+            background: linear-gradient(165deg, rgba(26, 35, 64, 0.92) 0%, rgba(10, 15, 30, 0.78) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            border-left: 1px solid rgba(255, 255, 255, 0.09);
+            box-shadow:
+                0 1px 0 0 rgba(255, 255, 255, 0.05) inset,
+                0 20px 40px -12px rgba(0, 0, 0, 0.7),
+                0 8px 16px -8px rgba(0, 0, 0, 0.5),
+                0 2px 4px 0 rgba(0, 0, 0, 0.3);
+            transform: translateZ(0);
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+        }
+        .card-3d:active {
+            transform: scale(0.97) translateY(2px);
+            box-shadow:
+                0 1px 0 0 rgba(255, 255, 255, 0.05) inset,
+                0 8px 16px -8px rgba(0, 0, 0, 0.6),
+                0 3px 6px -4px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Stat card with colored rim glow */
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            border-radius: 999px;
+        }
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: -30px; right: -30px;
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            filter: blur(30px);
+            opacity: 0.5;
+        }
+        .stat-gold::before { background: linear-gradient(90deg, transparent, #F59E0B, transparent); }
+        .stat-gold::after  { background: #F59E0B; }
+        .stat-emerald::before { background: linear-gradient(90deg, transparent, #10B981, transparent); }
+        .stat-emerald::after  { background: #10B981; }
+        .stat-amber::before { background: linear-gradient(90deg, transparent, #F59E0B, transparent); }
+        .stat-amber::after  { background: #F59E0B; }
+        .stat-rose::before { background: linear-gradient(90deg, transparent, #F43F5E, transparent); }
+        .stat-rose::after  { background: #F43F5E; }
+        .stat-cyan::before { background: linear-gradient(90deg, transparent, #06B6D4, transparent); }
+        .stat-cyan::after  { background: #06B6D4; }
+
+        /* Revenue mega card */
+        .revenue-card {
+            position: relative;
+            overflow: hidden;
+        }
+        .revenue-card::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: 20%; right: 20%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #06B6D4, #818CF8, transparent);
+            border-radius: 999px;
+        }
+        .revenue-card::after {
+            content: '';
+            position: absolute;
+            top: -40px; left: 50%; transform: translateX(-50%);
+            width: 160px; height: 80px;
+            background: linear-gradient(180deg, rgba(6, 182, 212, 0.15), transparent);
+            border-radius: 50%;
+            filter: blur(20px);
+        }
+
+        /* Gold Luxe Gradients */
+        .gold-gradient {
+            background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 40%, #B45309 100%);
+        }
+        .gold-gradient-btn {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            box-shadow: 0 4px 14px -3px rgba(245, 158, 11, 0.5);
+        }
+        .gold-text-gradient {
+            background: linear-gradient(135deg, #FFFBEB 0%, #FBBF24 50%, #F59E0B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-glow {
+            box-shadow: 0 0 30px -4px rgba(245, 158, 11, 0.5), 0 0 60px -8px rgba(245, 158, 11, 0.2);
+        }
+
+        /* Floating FAB 3D */
+        .fab-3d {
+            box-shadow:
+                0 0 30px -4px rgba(245, 158, 11, 0.5),
+                0 0 60px -8px rgba(245, 158, 11, 0.2),
+                0 10px 20px -5px rgba(0, 0, 0, 0.5),
+                0 2px 0 0 rgba(255, 255, 255, 0.15) inset;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .fab-3d:active {
+            transform: scale(0.92) translateY(3px) !important;
+            box-shadow:
+                0 0 15px -4px rgba(245, 158, 11, 0.4),
+                0 4px 8px -4px rgba(0, 0, 0, 0.5),
+                0 1px 0 0 rgba(255, 255, 255, 0.1) inset;
+        }
+
+        /* Member card 3D with left accent strip */
+        .member-card-3d {
+            background: linear-gradient(165deg, rgba(26, 35, 64, 0.92) 0%, rgba(10, 15, 30, 0.78) 100%);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow:
+                0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
+                0 20px 40px -15px rgba(0, 0, 0, 0.6),
+                0 8px 16px -8px rgba(0, 0, 0, 0.4);
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .member-card-3d::before {
+            content: '';
+            position: absolute;
+            top: 12px; bottom: 12px; left: 0;
+            width: 3px;
+            border-radius: 0 4px 4px 0;
+        }
+        .member-card-3d.status-active::before { background: linear-gradient(180deg, #34D399, #059669); }
+        .member-card-3d.status-expiring::before { background: linear-gradient(180deg, #FBBF24, #D97706); }
+        .member-card-3d.status-expired::before { background: linear-gradient(180deg, #FB7185, #E11D48); }
+        .member-card-3d:active {
+            transform: scale(0.98) translateY(1px);
+        }
+
+        /* Info row inset panel */
+        .info-inset {
+            background: rgba(5, 8, 16, 0.8);
+            box-shadow:
+                0 2px 6px 0 rgba(0, 0, 0, 0.4) inset,
+                0 -1px 0 0 rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        /* Action buttons 3D */
+        .btn-3d {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow:
+                0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+                0 4px 8px -3px rgba(0, 0, 0, 0.4);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .btn-3d:active {
+            transform: translateY(2px) scale(0.96);
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Bottom bar 3D */
+        .bottom-bar-3d {
+            background: rgba(5, 8, 16, 0.96);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow:
+                0 -1px 0 0 rgba(255, 255, 255, 0.03),
+                0 -20px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Header 3D */
+        .header-3d {
+            background: rgba(5, 8, 16, 0.92);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow:
+                0 1px 0 0 rgba(255, 255, 255, 0.03) inset,
+                0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Bottom Sheet Drawer */
+        .bottom-sheet {
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .bottom-sheet-hidden {
+            transform: translateY(100%);
+        }
+        .bottom-sheet-visible {
+            transform: translateY(0%);
+        }
+
+        /* Badge glow */
+        .badge-active {
+            background: rgba(16, 185, 129, 0.12);
+            color: #6EE7B7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            text-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+        }
+        .badge-expiring {
+            background: rgba(245, 158, 11, 0.12);
+            color: #FCD34D;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            text-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+        }
+        .badge-expired {
+            background: rgba(244, 63, 94, 0.12);
+            color: #FDA4AF;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            text-shadow: 0 0 12px rgba(244, 63, 94, 0.4);
+        }
+
+        /* Filter chip active */
+        .filter-active {
+            background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 40%, #B45309 100%);
+            color: #050810;
+            box-shadow: 0 4px 14px -3px rgba(245, 158, 11, 0.45), 0 1px 0 0 rgba(255, 255, 255, 0.2) inset;
+            border: none;
+        }
+        .filter-inactive {
+            background: rgba(10, 15, 30, 0.9);
+            color: #94A3B8;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 4px 8px -3px rgba(0, 0, 0, 0.4), 0 1px 0 0 rgba(255, 255, 255, 0.04) inset;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen selection:bg-amber-500 selection:text-black">
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 min-h-screen" style="background: radial-gradient(circle at top, #1a2340 0%, #050810 80%);">
+        <div class="w-full max-w-sm rounded-3xl p-6 relative card-3d" style="background: linear-gradient(165deg, rgba(26,35,64,0.95) 0%, rgba(10,15,30,0.98) 100%); border: 1px solid rgba(245,158,11,0.3); box-shadow: 0 25px 60px -15px rgba(0,0,0,0.8);">
+            
+            <!-- Logo & Title -->
+            <div class="text-center space-y-3 mb-6">
+                <div class="relative w-24 h-24 mx-auto mb-2 flex items-center justify-center">
+                    <div class="absolute inset-0 rounded-full gold-gradient opacity-40 blur-md animate-pulse"></div>
+                    <div class="relative w-24 h-24 rounded-full p-1 border-2 border-amber-400/80 fab-3d overflow-hidden flex items-center justify-center shadow-2xl" style="background: #050810; box-shadow: 0 10px 25px -5px rgba(245,158,11,0.5), inset 0 2px 4px rgba(255,255,255,0.2);">
+                        <img src="logo.jpg" alt="Arya Fitness Club Shirpur Logo" class="w-full h-full object-cover rounded-full">
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight text-white flex items-center justify-center gap-1.5">
+                        ARYA <span class="gold-text-gradient font-black">FITNESS</span>
+                    </h1>
+                    <p class="text-[10px] font-black text-amber-400 uppercase tracking-widest mt-1">CLUB SHIRPUR</p>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Admin Portal Login</p>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-extrabold text-slate-300 mb-1.5 uppercase tracking-wider text-[10px]">Admin ID *</label>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-3.5 text-slate-400 text-sm">👤</span>
+                        <input type="text" id="loginUserId" required placeholder="Enter Admin ID" class="w-full bg-obsidian-950 rounded-xl py-3 pl-10 pr-3 text-white focus:outline-none text-xs font-bold" style="border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-extrabold text-slate-300 mb-1.5 uppercase tracking-wider text-[10px]">Password *</label>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-3.5 text-slate-400 text-sm">🔒</span>
+                        <input type="password" id="loginPassword" required placeholder="Enter Password" class="w-full bg-obsidian-950 rounded-xl py-3 pl-10 pr-3 text-white focus:outline-none text-xs font-bold" style="border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                    </div>
+                    <div class="flex items-center space-x-2 mt-2">
+                        <input type="checkbox" id="showPasswordToggle" onclick="togglePasswordVisibility()" class="rounded border-slate-700 bg-obsidian-950 text-amber-500 focus:ring-amber-500 cursor-pointer">
+                        <label for="showPasswordToggle" class="text-[11px] font-bold text-slate-400 cursor-pointer select-none">Show Password</label>
+                    </div>
+                </div>
+
+                <!-- Error Alert Container -->
+                <div id="loginErrorMsg" class="hidden p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-[11px] font-bold text-center">
+                    ❌ Invalid Admin ID or Password!
+                </div>
+
+                <button type="submit" class="w-full py-3.5 gold-gradient text-obsidian-950 font-black text-sm rounded-xl gold-glow flex items-center justify-center space-x-2 btn-3d mt-2">
+                    <span>🔑</span> <span>Login to Dashboard</span>
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Top Header with 3D depth -->
+    <header class="sticky top-0 z-40 header-3d px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5" onclick="switchTab('dashboard')">
+            <div class="w-10 h-10 rounded-full border-2 border-amber-500/60 p-0.5 fab-3d bg-obsidian-950 overflow-hidden flex items-center justify-center shadow-lg" style="transform:none">
+                <img src="logo.jpg" alt="Arya Fitness Logo" class="w-full h-full object-cover rounded-full">
+            </div>
+            <div>
+                <h1 class="text-base font-black tracking-tight text-white leading-tight flex items-center gap-1">
+                    ARYA <span class="gold-text-gradient font-extrabold">FITNESS</span>
+                </h1>
+                <p class="text-[9px] font-extrabold text-amber-400/90 uppercase tracking-widest leading-none">Club Shirpur</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <button onclick="toggleQRModal(true)" class="bg-amber-500/10 text-amber-300 border border-amber-500/25 px-3 py-1.5 rounded-xl text-xs font-black flex items-center space-x-1.5 btn-3d">
+                <span>⚡</span> <span>QR Pay</span>
+            </button>
+            <div class="relative">
+                <button onclick="toggleHeaderMenu()" id="menuBtn" class="w-9 h-9 flex items-center justify-center rounded-xl bg-obsidian-800 text-slate-300 btn-3d text-lg" title="Menu">
+                    ☰
+                </button>
+                <div id="headerMenuDropdown" class="hidden absolute right-0 top-11 w-48 rounded-xl overflow-hidden z-50" style="background: rgba(15,20,40,0.97); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 16px 40px -8px rgba(0,0,0,0.7);">
+                    <div class="px-4 py-2.5 bg-amber-500/10 border-b border-white/5">
+                        <p class="text-[9px] text-slate-400 font-extrabold uppercase">Logged in as</p>
+                        <p class="text-xs font-black text-amber-300 flex items-center gap-1">👑 Arun Rajput (Admin)</p>
+                    </div>
+                    <button onclick="openExpenseTracker(); toggleHeaderMenu()" class="w-full px-4 py-3 text-left text-xs font-bold text-slate-200 flex items-center space-x-2.5 hover:bg-white/5 transition">
+                        <span class="text-base">💸</span> <span>Expenses</span>
+                    </button>
+                    <button onclick="handleLogout(); toggleHeaderMenu()" class="w-full px-4 py-3 text-left text-xs font-bold text-rose-400 flex items-center space-x-2.5 hover:bg-white/5 transition border-t border-white/5">
+                        <span class="text-base">🚪</span> <span>Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main App Content -->
+    <main class="px-4 pt-4 max-w-lg mx-auto">
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="view-dashboard" class="space-y-4">
+            
+            <!-- Admin Welcome Banner -->
+            <div class="card-3d p-3.5 rounded-2xl flex items-center justify-between" style="background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(15,23,42,0.6) 100%); border: 1px solid rgba(245,158,11,0.18);">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full border border-amber-500/40 p-0.5 bg-obsidian-950 overflow-hidden flex items-center justify-center shadow-md flex-shrink-0">
+                        <img src="logo.jpg" alt="Arya Fitness Logo" class="w-full h-full object-cover rounded-full">
+                    </div>
+                    <div>
+                        <h2 class="text-xs font-black text-white flex items-center gap-1.5">
+                            <span>Welcome back, Arun Rajput 👋</span>
+                            <span class="px-2 py-0.5 text-[8px] font-extrabold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Online</span>
+                        </h2>
+                        <p class="text-[10px] text-slate-400 font-bold">Arya Fitness Club Shirpur</p>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="px-2.5 py-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/25 rounded-xl text-[10px] font-black btn-3d flex items-center space-x-1" title="Logout">
+                    <span>🚪</span> <span>Logout</span>
+                </button>
+            </div>
+
+            <!-- 3D Analytics Grid -->
+            <div class="grid grid-cols-2 gap-3">
+                <div onclick="filterByStatusAndSwitchTab('ALL')" class="card-3d stat-card stat-gold p-4 rounded-2xl relative">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider relative z-10">Total Members</span>
+                    <p id="dashTotal" class="text-3xl font-black text-white mt-1 relative z-10">0</p>
+                </div>
+
+                <div onclick="filterByStatusAndSwitchTab('Active')" class="card-3d stat-card stat-emerald p-4 rounded-2xl relative">
+                    <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider relative z-10">Active</span>
+                    <p id="dashActive" class="text-3xl font-black text-emerald-400 mt-1 relative z-10">0</p>
+                </div>
+
+                <div onclick="filterByStatusAndSwitchTab('Expiring Soon')" class="card-3d stat-card stat-amber p-4 rounded-2xl relative">
+                    <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider relative z-10">Expiring Soon</span>
+                    <p id="dashExpiring" class="text-3xl font-black text-amber-400 mt-1 relative z-10">0</p>
+                </div>
+
+                <div onclick="filterByStatusAndSwitchTab('Expired')" class="card-3d stat-card stat-rose p-4 rounded-2xl relative">
+                    <span class="text-[10px] font-bold text-rose-400 uppercase tracking-wider relative z-10">Expired</span>
+                    <p id="dashExpired" class="text-3xl font-black text-rose-400 mt-1 relative z-10">0</p>
+                </div>
+            </div>
+
+            <!-- 3D Revenue Card -->
+            <div class="card-3d revenue-card p-4 rounded-2xl space-y-3">
+                <div class="flex items-center justify-between relative z-10">
+                    <div>
+                        <span class="text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider block" id="revenueCardTitle">Monthly Revenue</span>
+                        <p id="dashRevenue" class="text-3xl font-black text-white mt-1">₹0</p>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button onclick="toggleRevenueHistoryModal(true)" class="px-3 py-1.5 bg-cyan-500/12 border border-cyan-500/30 text-cyan-300 text-[10px] font-extrabold rounded-xl flex items-center space-x-1 btn-3d">
+                            <span>📊</span> <span>History</span>
+                        </button>
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-cyan-300 text-lg" style="background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(129,140,248,0.15)); border: 1px solid rgba(6,182,212,0.25); box-shadow: 0 4px 12px -3px rgba(6,182,212,0.2);">
+                            💰
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-white/5 pt-2 flex items-center justify-between text-[10px] relative z-10">
+                    <div class="flex items-center space-x-1.5 text-slate-300 font-semibold">
+                        <span>Month:</span>
+                        <select id="monthSelector" onchange="onMonthSelectChange()" class="bg-obsidian-950 text-amber-300 font-extrabold border border-white/8 rounded-lg px-2 py-1 text-[10px] focus:outline-none">
+                        </select>
+                    </div>
+                    <span class="text-emerald-400/80 font-bold flex items-center gap-1">
+                        <span>🔄</span> <span>Auto-Resets 1st</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Urgent Alert -->
+            <div id="urgentAlertsBox" class="hidden">
+                <div class="card-3d stat-card stat-rose p-3 rounded-2xl flex items-center justify-between">
+                    <div class="flex items-center space-x-2 relative z-10">
+                        <span class="text-lg">🚨</span>
+                        <div>
+                            <h4 class="text-xs font-black text-rose-300">Expired Members Alert</h4>
+                            <p id="urgentAlertText" class="text-[10px] text-slate-300">0 member(s) membership expired</p>
+                        </div>
+                    </div>
+                    <button onclick="filterByStatusAndSwitchTab('Expired')" class="text-obsidian-950 font-black text-[10px] px-3 py-1.5 rounded-lg relative z-10" style="background: linear-gradient(135deg, #FB7185, #E11D48);">
+                        View
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Members -->
+            <div class="card-3d p-4 rounded-2xl space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                        <span>👥</span> Recently Added
+                    </h3>
+                    <button onclick="switchTab('members')" class="text-[10px] font-bold text-amber-400">View All →</button>
+                </div>
+                <div id="dashRecentMembersList" class="space-y-2">
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- TAB 2: MEMBERS LIST -->
+        <section id="view-members" class="hidden space-y-3">
+            
+            <!-- Search Bar -->
+            <div class="relative">
+                <input type="text" id="searchInput" onkeyup="renderMembersList()" placeholder="Search name or phone..." 
+                       class="w-full bg-obsidian-900/90 text-white placeholder-slate-500 rounded-2xl pl-10 pr-9 py-3 text-xs focus:outline-none shadow-xl" style="border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 4px 12px -3px rgba(0,0,0,0.4) inset, 0 1px 0 0 rgba(255,255,255,0.04);">
+                <span class="absolute left-3.5 top-3 text-slate-400 text-sm">🔍</span>
+                <button onclick="clearSearch()" id="clearSearchBtn" class="hidden absolute right-3 top-2.5 text-slate-500 p-1">✕</button>
+            </div>
+
+            <!-- Filter Chips -->
+            <div class="flex space-x-2 overflow-x-auto no-scrollbar py-0.5">
+                <button onclick="setStatusFilter('ALL')" id="mfilter-ALL" class="px-4 py-2 rounded-xl text-xs font-black whitespace-nowrap filter-active">
+                    All (<span id="mcount-ALL">0</span>)
+                </button>
+                <button onclick="setStatusFilter('Active')" id="mfilter-Active" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">
+                    Active (<span id="mcount-Active">0</span>)
+                </button>
+                <button onclick="setStatusFilter('Expiring Soon')" id="mfilter-Expiring Soon" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">
+                    Expiring (<span id="mcount-Expiring Soon">0</span>)
+                </button>
+                <button onclick="setStatusFilter('Expired')" id="mfilter-Expired" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">
+                    Expired (<span id="mcount-Expired">0</span>)
+                </button>
+            </div>
+
+            <!-- Sort -->
+            <div class="flex justify-between items-center px-1">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider" id="resultCountText">Showing 0 Members</span>
+                <select id="sortBy" onchange="renderMembersList()" class="bg-obsidian-900 text-slate-300 text-[11px] font-bold rounded-xl px-2.5 py-1.5 focus:outline-none" style="border: 1px solid rgba(255,255,255,0.06);">
+                    <option value="NEWEST">Newest</option>
+                    <option value="OLDEST">Oldest</option>
+                    <option value="NAME_ASC">Sort (A-Z)</option>
+                </select>
+            </div>
+
+            <!-- Member Cards -->
+            <div id="membersMobileContainer" class="space-y-3">
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- BOTTOM NAV BAR -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bottom-bar-3d px-6 py-2 flex justify-around items-center max-w-lg mx-auto">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex-1 py-1 flex flex-col items-center justify-center text-amber-400 transition">
+            <span class="text-xl leading-none">🏠</span>
+            <span class="text-[10px] font-black mt-1">Home</span>
+        </button>
+
+        <button onclick="openAddMemberModal()" class="w-14 h-14 gold-gradient text-obsidian-950 font-black rounded-full flex items-center justify-center text-2xl fab-3d -mt-6 border-4 border-obsidian-950" title="Add Member">
+            ＋
+        </button>
+
+        <button onclick="switchTab('members')" id="nav-members" class="flex-1 py-1 flex flex-col items-center justify-center text-slate-500 transition">
+            <span class="text-xl leading-none">👥</span>
+            <span class="text-[10px] font-bold mt-1">Members</span>
+        </button>
+    </nav>
+
+
+    <!-- MODAL: ADD MEMBER -->
+    <div id="memberModalOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-lg z-50 hidden flex items-end justify-center">
+        <div id="memberModalSheet" class="bottom-sheet bottom-sheet-hidden w-full max-w-lg rounded-t-3xl p-5 max-h-[92vh] overflow-y-auto" style="background: linear-gradient(165deg, rgba(26,35,64,0.97) 0%, rgba(10,15,30,0.95) 100%); border-top: 1px solid rgba(245,158,11,0.3); box-shadow: 0 -20px 60px -10px rgba(0,0,0,0.6), 0 -1px 0 0 rgba(255,255,255,0.06);">
+            
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-3"></div>
+
+            <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3">
+                <div>
+                    <h3 id="modalTitle" class="text-base font-black text-white">New Member Pass</h3>
+                    <p class="text-[10px] text-amber-400 font-bold">Creates pass & auto-sends WhatsApp receipt</p>
+                </div>
+                <button onclick="closeAddMemberModal()" class="text-slate-400 hover:text-white text-2xl font-bold p-1">&times;</button>
+            </div>
+            
+            <form id="addMemberForm" onsubmit="handleFormSubmit(event)" class="space-y-3.5 text-xs">
+                <input type="hidden" id="editMemberId" value="">
+                
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Full Name *</label>
+                    <input type="text" id="memberName" required placeholder="e.g. Rahul Sharma" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">WhatsApp Mobile Number *</label>
+                    <input type="tel" id="memberPhone" required placeholder="10-digit mobile number" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Joining Date *</label>
+                        <input type="date" id="memberJoiningDate" required class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset; color-scheme: dark;" onchange="updateEndDate()">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Duration</label>
+                        <select id="memberPlan" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;" onchange="updateEndDate(); updateAutoAmount()">
+                            <option value="1">1 Month (30 Days)</option>
+                            <option value="2">2 Months (60 Days)</option>
+                            <option value="3">3 Months (90 Days)</option>
+                            <option value="6">6 Months (180 Days)</option>
+                            <option value="12">12 Months (360 Days)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">End Date (Auto)</label>
+                        <input type="text" id="memberEndDate" readonly class="w-full bg-obsidian-950 rounded-xl p-3 text-amber-400 font-bold focus:outline-none text-xs" style="border: 1px solid rgba(245,158,11,0.2); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;" placeholder="Select joining date">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Amount (₹) *</label>
+                        <input type="number" id="memberAmount" required value="1000" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Payment Method</label>
+                    <select id="paymentMethod" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                        <option value="UPI / Online">UPI / Online</option>
+                        <option value="Cash">Cash</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Photo (Optional)</label>
+                    <div class="flex items-center space-x-2">
+                        <div id="photoPreview" class="w-11 h-11 bg-obsidian-950 rounded-xl flex items-center justify-center text-slate-500 text-[10px] overflow-hidden flex-shrink-0" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                            No Pic
+                        </div>
+                        <button type="button" onclick="document.getElementById('cameraInput').click()" class="flex-1 py-3 bg-obsidian-900 text-slate-200 text-xs font-bold rounded-xl flex items-center justify-center space-x-1.5 btn-3d">
+                            <span>📸</span> <span>Camera</span>
+                        </button>
+                        <button type="button" onclick="document.getElementById('galleryInput').click()" class="flex-1 py-3 bg-obsidian-900 text-slate-200 text-xs font-bold rounded-xl flex items-center justify-center space-x-1.5 btn-3d">
+                            <span>📁</span> <span>Gallery</span>
+                        </button>
+                        <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoUpload(event)">
+                        <input type="file" id="galleryInput" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+                    </div>
+                </div>
+
+                <div class="flex space-x-2.5 pt-2">
+                    <button type="button" onclick="closeAddMemberModal()" class="flex-1 py-3.5 rounded-xl text-slate-400 font-bold btn-3d bg-obsidian-900">Cancel</button>
+                    <button type="submit" id="saveSubmitBtn" class="flex-1 py-3.5 gold-gradient text-obsidian-950 font-black rounded-xl gold-glow">Save & Send Receipt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- MODAL: UPI QR -->
+    <div id="qrModalOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-lg z-50 hidden flex items-end justify-center">
+        <div id="qrModalSheet" class="bottom-sheet bottom-sheet-hidden w-full max-w-lg rounded-t-3xl p-6 text-center relative" style="background: linear-gradient(165deg, rgba(26,35,64,0.97) 0%, rgba(10,15,30,0.95) 100%); border-top: 1px solid rgba(245,158,11,0.3); box-shadow: 0 -20px 60px -10px rgba(0,0,0,0.6);">
+            <button onclick="toggleQRModal(false)" class="absolute top-4 right-4 text-slate-400 text-2xl font-bold hover:text-white">&times;</button>
+            <div class="w-12 h-12 rounded-full border-2 border-amber-400/80 p-0.5 mx-auto mb-2 bg-obsidian-950 overflow-hidden flex items-center justify-center fab-3d gold-glow">
+                <img src="logo.jpg" alt="Arya Fitness Logo" class="w-full h-full object-cover rounded-full">
+            </div>
+            <h3 class="text-base font-black text-white">Arya Fitness Club Shirpur</h3>
+            <p class="text-xs text-slate-400 mb-3">Scan PhonePe QR to Pay</p>
+
+            <div class="bg-white p-2.5 rounded-2xl inline-block my-1 gold-glow" style="border: 3px solid rgba(245,158,11,0.4);">
+                <img src="qr.jpg" alt="PhonePe UPI QR" class="w-60 h-60 mx-auto rounded-xl object-contain">
+            </div>
+
+            <div class="mt-3 p-3 info-inset rounded-2xl flex items-center justify-between">
+                <div class="text-left">
+                    <p class="text-[9px] text-slate-500 uppercase tracking-widest font-bold">PhonePe / UPI ID</p>
+                    <p class="text-xs font-black text-amber-400">7620820352@ybl</p>
+                </div>
+                <button onclick="copyUpi()" class="bg-obsidian-800 text-slate-200 text-xs px-3 py-1.5 rounded-xl font-bold btn-3d">Copy UPI</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL: MONTHLY REVENUE HISTORY -->
+    <div id="revenueHistoryOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-lg z-50 hidden flex items-end justify-center">
+        <div id="revenueHistorySheet" class="bottom-sheet bottom-sheet-hidden w-full max-w-lg rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto" style="background: linear-gradient(165deg, rgba(26,35,64,0.97) 0%, rgba(10,15,30,0.95) 100%); border-top: 1px solid rgba(6,182,212,0.3); box-shadow: 0 -20px 60px -10px rgba(0,0,0,0.6);">
+            
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-3"></div>
+
+            <div class="flex justify-between items-center mb-3 border-b border-white/5 pb-2.5">
+                <div>
+                    <h3 class="text-base font-black text-white flex items-center gap-1.5">
+                        <span>📊</span> Revenue History
+                    </h3>
+                    <p class="text-[10px] text-cyan-400 font-bold">Monthly breakdown & total collections</p>
+                </div>
+                <button onclick="toggleRevenueHistoryModal(false)" class="text-slate-400 hover:text-white text-2xl font-bold p-1">&times;</button>
+            </div>
+
+            <!-- Grand Total -->
+            <div class="card-3d stat-card stat-cyan p-3.5 rounded-2xl flex items-center justify-between mb-3">
+                <div class="relative z-10">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">All-Time Revenue</span>
+                    <p id="allTimeGrandTotal" class="text-xl font-black text-emerald-400 mt-0.5">₹0</p>
+                </div>
+                <div class="text-right relative z-10">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Payments</span>
+                    <p id="allTimeCount" class="text-base font-black text-white mt-0.5">0</p>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-300">By Month</h4>
+                <div id="monthlyBreakdownContainer" class="space-y-2 max-h-64 overflow-y-auto no-scrollbar">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL: RENEW MEMBER -->
+
+
+    <!-- MODAL: EXPENSE TRACKER -->
+    <div id="expenseTrackerOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-lg z-50 hidden flex items-end justify-center">
+        <div id="expenseTrackerSheet" class="bottom-sheet bottom-sheet-hidden w-full max-w-lg rounded-t-3xl p-5 max-h-[90vh] overflow-y-auto" style="background: linear-gradient(165deg, rgba(26,35,64,0.97) 0%, rgba(10,15,30,0.95) 100%); border-top: 1px solid rgba(244,63,94,0.3); box-shadow: 0 -20px 60px -10px rgba(0,0,0,0.6);">
+            
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-3"></div>
+
+            <div class="flex justify-between items-center mb-3 border-b border-white/5 pb-2.5">
+                <div>
+                    <h3 class="text-base font-black text-white flex items-center gap-1.5">
+                        <span>💸</span> Expense Tracker
+                    </h3>
+                    <p class="text-[10px] text-rose-400 font-bold">Track gym monthly expenses</p>
+                </div>
+                <button onclick="closeExpenseTracker()" class="text-slate-400 hover:text-white text-2xl font-bold p-1">&times;</button>
+            </div>
+
+            <!-- Month Selector -->
+            <div class="flex items-center justify-between mb-3">
+                <select id="expenseMonthSelector" onchange="renderExpenseList()" class="bg-obsidian-950 text-amber-300 font-extrabold border border-white/8 rounded-xl px-3 py-2 text-xs focus:outline-none" style="box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                </select>
+                <button onclick="openAddExpenseModal()" class="px-4 py-2 text-xs font-black rounded-xl flex items-center space-x-1.5" style="background: linear-gradient(135deg, #FB7185, #E11D48); color: #050810; box-shadow: 0 4px 14px -3px rgba(244,63,94,0.4);">
+                    <span>＋</span> <span>Add Expense</span>
+                </button>
+            </div>
+
+            <!-- Total Card -->
+            <div class="card-3d stat-card stat-rose p-3.5 rounded-2xl flex items-center justify-between mb-3">
+                <div class="relative z-10">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Expenses</span>
+                    <p id="expenseTotalAmount" class="text-xl font-black text-rose-400 mt-0.5">₹0</p>
+                </div>
+                <div class="text-right relative z-10">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Entries</span>
+                    <p id="expenseTotalCount" class="text-base font-black text-white mt-0.5">0</p>
+                </div>
+            </div>
+
+            <!-- Expense List -->
+            <div id="expenseListContainer" class="space-y-2 max-h-[45vh] overflow-y-auto no-scrollbar">
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL: ADD EXPENSE -->
+    <div id="addExpenseOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-lg z-[60] hidden flex items-end justify-center">
+        <div id="addExpenseSheet" class="bottom-sheet bottom-sheet-hidden w-full max-w-lg rounded-t-3xl p-5" style="background: linear-gradient(165deg, rgba(26,35,64,0.97) 0%, rgba(10,15,30,0.95) 100%); border-top: 1px solid rgba(244,63,94,0.3); box-shadow: 0 -20px 60px -10px rgba(0,0,0,0.6);">
+            
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-3"></div>
+
+            <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3">
+                <div>
+                    <h3 class="text-base font-black text-white flex items-center gap-1.5">＋ Add Expense</h3>
+                    <p class="text-[10px] text-rose-400 font-bold">Record a new expense</p>
+                </div>
+                <button onclick="closeAddExpenseModal()" class="text-slate-400 hover:text-white text-2xl font-bold p-1">&times;</button>
+            </div>
+            
+            <form id="addExpenseForm" onsubmit="handleAddExpense(event)" class="space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Description *</label>
+                    <input type="text" id="expenseDesc" required placeholder="e.g. Light Bill, Water Cans, Machine Maintenance" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Date *</label>
+                        <input type="date" id="expenseDate" required class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset; color-scheme: dark;">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Amount (₹) *</label>
+                        <input type="number" id="expenseAmount" required placeholder="Enter Amount" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                    </div>
+                </div>
+
+                <div class="flex space-x-2.5 pt-2">
+                    <button type="button" onclick="closeAddExpenseModal()" class="flex-1 py-3.5 rounded-xl text-slate-400 font-bold btn-3d bg-obsidian-900">Cancel</button>
+                    <button type="submit" class="flex-1 py-3.5 font-black rounded-xl" style="background: linear-gradient(135deg, #FB7185, #E11D48); color: #050810; box-shadow: 0 4px 14px -3px rgba(244,63,94,0.5);">Save Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="renewModalOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-lg z-50 hidden flex items-end justify-center">
+        <div id="renewModalSheet" class="bottom-sheet bottom-sheet-hidden w-full max-w-lg rounded-t-3xl p-5 max-h-[80vh] overflow-y-auto" style="background: linear-gradient(165deg, rgba(26,35,64,0.97) 0%, rgba(10,15,30,0.95) 100%); border-top: 1px solid rgba(16,185,129,0.3); box-shadow: 0 -20px 60px -10px rgba(0,0,0,0.6);">
+            
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-3"></div>
+
+            <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3">
+                <div>
+                    <h3 class="text-base font-black text-white flex items-center gap-1.5">⚡ Renew Membership</h3>
+                    <p id="renewMemberNameLabel" class="text-[10px] text-emerald-400 font-bold">Member Name</p>
+                </div>
+                <button onclick="closeRenewModal()" class="text-slate-400 hover:text-white text-2xl font-bold p-1">&times;</button>
+            </div>
+            
+            <form id="renewForm" onsubmit="handleRenewSubmit(event)" class="space-y-3.5 text-xs">
+                <input type="hidden" id="renewMemberId" value="">
+                
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Renewal Duration *</label>
+                    <select id="renewMonths" required class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                        <option value="1">1 Month</option>
+                        <option value="2">2 Months</option>
+                        <option value="3">3 Months</option>
+                        <option value="6">6 Months</option>
+                        <option value="12">12 Months (1 Year)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Amount Paid (₹) *</label>
+                    <input type="number" id="renewAmount" required placeholder="Enter Amount (₹)" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Payment Method</label>
+                    <select id="renewPaymentMethod" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                        <option value="UPI / Online">UPI / Online</option>
+                        <option value="Cash">Cash</option>
+                    </select>
+                </div>
+
+                <div class="flex space-x-2.5 pt-2">
+                    <button type="button" onclick="closeRenewModal()" class="flex-1 py-3.5 rounded-xl text-slate-400 font-bold btn-3d bg-obsidian-900">Cancel</button>
+                    <button type="submit" class="flex-1 py-3.5 font-black rounded-xl" style="background: linear-gradient(135deg, #10B981, #059669); color: #050810; box-shadow: 0 4px 14px -3px rgba(16,185,129,0.5);">Renew & Send Receipt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Application Script -->
+    <script>
+        const OWNER_PHONE = "+917620820352";
+        let activeTab = 'dashboard';
+        let activeFilter = 'ALL';
+        let currentPhotoData = '';
+        let selectedMonthKey = 'CURRENT';
+
+        const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+        function formatDateToDMY(date) {
+            const d = date.getDate();
+            const m = MONTH_NAMES[date.getMonth()];
+            const y = date.getFullYear();
+            return `${d}-${m}-${y}`;
+        }
+
+        function getMonthKey(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function getMonthName(date) {
+            return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+        }
+
+        function parseMonthKeyToName(mk) {
+            if (!mk || mk === 'ALL') return 'All Time Total';
+            const [y, m] = mk.split('-');
+            return new Date(parseInt(y), parseInt(m) - 1, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+        }
+
+        function parseDMYToDate(dmyStr) {
+            if (!dmyStr) return new Date();
+            const p = dmyStr.split('-');
+            if (p.length === 3) {
+                const monthIdx = MONTH_NAMES.indexOf(p[1]);
+                if (monthIdx !== -1) return new Date(parseInt(p[2]), monthIdx, parseInt(p[0]));
+                return new Date(p[2], p[1] - 1, p[0]);
+            }
+            return new Date(dmyStr);
+        }
+
+        function getMemberPlanText(m) {
+            if (m.planMonths) {
+                const pm = parseInt(m.planMonths);
+                return pm === 12 ? '12 Mos (1 Yr)' : `${pm} Month${pm > 1 ? 's' : ''}`;
+            }
+            const join = parseDMYToDate(m.joiningDate);
+            const exp = parseDMYToDate(m.expiryDate);
+            const months = Math.max(1, (exp.getFullYear() - join.getFullYear()) * 12 + (exp.getMonth() - join.getMonth()));
+            return months >= 12 ? '12 Mos (1 Yr)' : `${months} Month${months > 1 ? 's' : ''}`;
+        }
+
+        const now = new Date();
+        const currentMonthKey = getMonthKey(now);
+
+        // ===== 12 DEMO MEMBERS: 3 Active | 5 Expiring Soon | 4 Expired =====
+
+        // Helper dates
+        function daysFromNow(d) { return new Date(now.getFullYear(), now.getMonth(), now.getDate() + d); }
+        function monthsAgo(m, day) { return new Date(now.getFullYear(), now.getMonth() - m, day || 1); }
+        function thisMonth(day) { return new Date(now.getFullYear(), now.getMonth(), day); }
+
+        const sampleMembers = [
+            // ── 3 ACTIVE (expiry 15+ days out) ──
+            { id: 101, name: 'Viraj Mali',       phone: '8657271010', planMonths: 1,  joiningDate: formatDateToDMY(thisMonth(2)),     expiryDate: formatDateToDMY(daysFromNow(22)), amount: 1200, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 100000 },
+            { id: 102, name: 'Aarav Joshi',       phone: '9823456781', planMonths: 3,  joiningDate: formatDateToDMY(thisMonth(5)),     expiryDate: formatDateToDMY(daysFromNow(55)), amount: 3000, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 200000 },
+            { id: 103, name: 'Pranav Kulkarni',   phone: '9876543211', planMonths: 1,  joiningDate: formatDateToDMY(thisMonth(1)),     expiryDate: formatDateToDMY(daysFromNow(20)), amount: 1200, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 300000 },
+
+            // ── 5 EXPIRING SOON (expiry 1-5 days out) ──
+            { id: 201, name: 'Swapnil Patil',     phone: '9823411223', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(1, 11)), expiryDate: formatDateToDMY(daysFromNow(1)),  amount: 1000, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 400000 },
+            { id: 202, name: 'Rohit Sharma',      phone: '9112233445', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(1, 9)),  expiryDate: formatDateToDMY(daysFromNow(2)),  amount: 1200, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 500000 },
+            { id: 203, name: 'Kunal Sawant',      phone: '9223344556', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(1, 7)),  expiryDate: formatDateToDMY(daysFromNow(3)),  amount: 1000, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 600000 },
+            { id: 204, name: 'Nikhil Pawar',      phone: '9334455667', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(1, 5)),  expiryDate: formatDateToDMY(daysFromNow(4)),  amount: 1200, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 700000 },
+            { id: 205, name: 'Tejas Bhosale',     phone: '9445566778', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(1, 3)),  expiryDate: formatDateToDMY(daysFromNow(5)),  amount: 1000, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 800000 },
+
+            // ── 4 EXPIRED (expiry 5-30 days ago) ──
+            { id: 301, name: 'Rohan Deshmukh',    phone: '9876543210', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(2, 5)),  expiryDate: formatDateToDMY(daysFromNow(-5)),  amount: 1200, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 2000000000 },
+            { id: 302, name: 'Akshay Shinde',     phone: '9123456780', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(2, 1)),  expiryDate: formatDateToDMY(daysFromNow(-10)), amount: 1000, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 3000000000 },
+            { id: 303, name: 'Vishal Thombare',   phone: '9556677889', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(2, 10)), expiryDate: formatDateToDMY(daysFromNow(-18)), amount: 1200, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 4000000000 },
+            { id: 304, name: 'Sachin Mane',       phone: '9667788990', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(2, 15)), expiryDate: formatDateToDMY(daysFromNow(-25)), amount: 1000, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 5000000000 }
+        ];
+
+        const curMK = getMonthKey(now);
+        const prevMK1 = getMonthKey(monthsAgo(1, 1));
+        const prevMK2 = getMonthKey(monthsAgo(2, 1));
+        const prevMK3 = getMonthKey(monthsAgo(3, 1));
+        const prevMK4 = getMonthKey(monthsAgo(4, 1));
+
+        const sampleTransactions = [
+            // ── CURRENT MONTH (Aug 2026) — ₹8,400 ──
+            { id: 3001, memberId: 101, memberName: 'Viraj Mali',       amount: 1200, method: 'UPI / Online', date: formatDateToDMY(thisMonth(2)),  monthKey: curMK, timestamp: Date.now() - 100000,  type: 'New Join' },
+            { id: 3002, memberId: 102, memberName: 'Aarav Joshi',       amount: 3000, method: 'UPI / Online', date: formatDateToDMY(thisMonth(5)),  monthKey: curMK, timestamp: Date.now() - 200000,  type: 'New Join' },
+            { id: 3003, memberId: 103, memberName: 'Pranav Kulkarni',   amount: 1200, method: 'Cash',         date: formatDateToDMY(thisMonth(1)),  monthKey: curMK, timestamp: Date.now() - 300000,  type: 'New Join' },
+            { id: 3004, memberId: 301, memberName: 'Rohan Deshmukh',    amount: 1200, method: 'UPI / Online', date: formatDateToDMY(thisMonth(3)),  monthKey: curMK, timestamp: Date.now() - 350000,  type: 'Renewal' },
+            { id: 3005, memberId: 999, memberName: 'Aditya More',       amount: 1800, method: 'UPI / Online', date: formatDateToDMY(thisMonth(7)),  monthKey: curMK, timestamp: Date.now() - 380000,  type: 'New Join' },
+
+            // ── LAST MONTH (Jul 2026) — ₹11,400 ──
+            { id: 3010, memberId: 201, memberName: 'Swapnil Patil',     amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(1, 11)), monthKey: prevMK1, timestamp: Date.now() - 400000,  type: 'New Join' },
+            { id: 3011, memberId: 202, memberName: 'Rohit Sharma',      amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(1, 9)),  monthKey: prevMK1, timestamp: Date.now() - 500000,  type: 'New Join' },
+            { id: 3012, memberId: 203, memberName: 'Kunal Sawant',      amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(1, 7)),  monthKey: prevMK1, timestamp: Date.now() - 600000,  type: 'New Join' },
+            { id: 3013, memberId: 204, memberName: 'Nikhil Pawar',      amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(1, 5)),  monthKey: prevMK1, timestamp: Date.now() - 700000,  type: 'New Join' },
+            { id: 3014, memberId: 205, memberName: 'Tejas Bhosale',     amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(1, 3)),  monthKey: prevMK1, timestamp: Date.now() - 800000,  type: 'New Join' },
+            { id: 3015, memberId: 998, memberName: 'Omkar Kadam',       amount: 3000, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(1, 15)), monthKey: prevMK1, timestamp: Date.now() - 850000,  type: 'Renewal' },
+            { id: 3016, memberId: 997, memberName: 'Sahil Jagtap',      amount: 3000, method: 'Cash',         date: formatDateToDMY(monthsAgo(1, 20)), monthKey: prevMK1, timestamp: Date.now() - 880000,  type: 'New Join' },
+
+            // ── 2 MONTHS AGO (Jun 2026) — ₹9,400 ──
+            { id: 3020, memberId: 301, memberName: 'Rohan Deshmukh',    amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(2, 5)),  monthKey: prevMK2, timestamp: Date.now() - 2000000000, type: 'New Join' },
+            { id: 3021, memberId: 302, memberName: 'Akshay Shinde',     amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(2, 1)),  monthKey: prevMK2, timestamp: Date.now() - 3000000000, type: 'New Join' },
+            { id: 3022, memberId: 303, memberName: 'Vishal Thombare',   amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(2, 10)), monthKey: prevMK2, timestamp: Date.now() - 4000000000, type: 'New Join' },
+            { id: 3023, memberId: 304, memberName: 'Sachin Mane',       amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(2, 15)), monthKey: prevMK2, timestamp: Date.now() - 5000000000, type: 'New Join' },
+            { id: 3024, memberId: 996, memberName: 'Tushar Parab',      amount: 3000, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(2, 8)),  monthKey: prevMK2, timestamp: Date.now() - 5100000000, type: 'Renewal' },
+            { id: 3025, memberId: 995, memberName: 'Kiran Yadav',       amount: 2000, method: 'Cash',         date: formatDateToDMY(monthsAgo(2, 22)), monthKey: prevMK2, timestamp: Date.now() - 5200000000, type: 'New Join' },
+
+            // ── 3 MONTHS AGO (May 2026) — ₹7,200 ──
+            { id: 3030, memberId: 994, memberName: 'Rahul Nikam',       amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(3, 2)),  monthKey: prevMK3, timestamp: Date.now() - 7000000000, type: 'New Join' },
+            { id: 3031, memberId: 993, memberName: 'Shubham Gawade',    amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(3, 8)),  monthKey: prevMK3, timestamp: Date.now() - 7200000000, type: 'New Join' },
+            { id: 3032, memberId: 992, memberName: 'Vaibhav Salunkhe',  amount: 3000, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(3, 14)), monthKey: prevMK3, timestamp: Date.now() - 7400000000, type: 'Renewal' },
+            { id: 3033, memberId: 991, memberName: 'Ajay Deshpande',    amount: 2000, method: 'Cash',         date: formatDateToDMY(monthsAgo(3, 20)), monthKey: prevMK3, timestamp: Date.now() - 7600000000, type: 'New Join' },
+
+            // ── 4 MONTHS AGO (Apr 2026) — ₹5,400 ──
+            { id: 3040, memberId: 990, memberName: 'Mahesh Bhosale',    amount: 1200, method: 'Cash',         date: formatDateToDMY(monthsAgo(4, 3)),  monthKey: prevMK4, timestamp: Date.now() - 9000000000, type: 'New Join' },
+            { id: 3041, memberId: 989, memberName: 'Suresh Chavan',     amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(4, 10)), monthKey: prevMK4, timestamp: Date.now() - 9200000000, type: 'New Join' },
+            { id: 3042, memberId: 988, memberName: 'Deepak Raut',       amount: 3000, method: 'Cash',         date: formatDateToDMY(monthsAgo(4, 18)), monthKey: prevMK4, timestamp: Date.now() - 9400000000, type: 'Renewal' }
+        ];
+
+        let members = JSON.parse(localStorage.getItem('arya_fitness_luxury_v8')) || sampleMembers;
+        let transactions = JSON.parse(localStorage.getItem('arya_fitness_transactions_v8')) || sampleTransactions;
+
+        function saveMembers() {
+            localStorage.setItem('arya_fitness_luxury_v8', JSON.stringify(members));
+            localStorage.setItem('arya_fitness_transactions_v8', JSON.stringify(transactions));
+            updateStats();
+            renderCurrentView();
+        }
+
+        function getStatus(expiryDateStr) {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const expiry = parseDMYToDate(expiryDateStr); expiry.setHours(0,0,0,0);
+            const diff = Math.ceil((expiry - today) / 86400000);
+            if (diff < 0) return { label: 'Expired', badge: 'badge-expired', cardClass: 'status-expired' };
+            if (diff <= 5) return { label: 'Expiring Soon', badge: 'badge-expiring', cardClass: 'status-expiring' };
+            return { label: 'Active', badge: 'badge-active', cardClass: 'status-active' };
+        }
+
+        function populateMonthSelectorOptions() {
+            const sel = document.getElementById('monthSelector');
+            const curKey = getMonthKey(new Date());
+            const monthSet = new Set([curKey]);
+            transactions.forEach(t => { if (t.monthKey) monthSet.add(t.monthKey); });
+            const sorted = Array.from(monthSet).sort().reverse();
+
+            sel.innerHTML = '';
+            const o1 = document.createElement('option'); o1.value = curKey; o1.innerText = `Current (${getMonthName(new Date())})`; sel.appendChild(o1);
+            sorted.forEach(mk => { if (mk !== curKey) { const o = document.createElement('option'); o.value = mk; o.innerText = parseMonthKeyToName(mk); sel.appendChild(o); }});
+            const oAll = document.createElement('option'); oAll.value = 'ALL'; oAll.innerText = 'All-Time Total'; sel.appendChild(oAll);
+            sel.value = selectedMonthKey === 'CURRENT' ? curKey : selectedMonthKey;
+        }
+
+        function onMonthSelectChange() {
+            selectedMonthKey = document.getElementById('monthSelector').value;
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = members.length;
+            const ac = members.filter(m => getStatus(m.expiryDate).label === 'Active').length;
+            const ex = members.filter(m => getStatus(m.expiryDate).label === 'Expiring Soon').length;
+            const ed = members.filter(m => getStatus(m.expiryDate).label === 'Expired').length;
+            populateMonthSelectorOptions();
+
+            const curKey = getMonthKey(new Date());
+            const amk = (selectedMonthKey === 'CURRENT' || !selectedMonthKey) ? curKey : selectedMonthKey;
+            let ft = amk === 'ALL' ? transactions : transactions.filter(t => t.monthKey === amk);
+            document.getElementById('revenueCardTitle').innerText = amk === 'ALL' ? 'All-Time Total Revenue' : (amk === curKey ? 'Current Month Revenue' : parseMonthKeyToName(amk) + ' Revenue');
+            const rev = ft.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+
+            document.getElementById('dashTotal').innerText = total;
+            document.getElementById('dashActive').innerText = ac;
+            document.getElementById('dashExpiring').innerText = ex;
+            document.getElementById('dashExpired').innerText = ed;
+            document.getElementById('dashRevenue').innerText = '₹' + rev.toLocaleString('en-IN');
+            document.getElementById('mcount-ALL').innerText = total;
+            document.getElementById('mcount-Active').innerText = ac;
+            document.getElementById('mcount-Expiring Soon').innerText = ex;
+            document.getElementById('mcount-Expired').innerText = ed;
+
+            const ub = document.getElementById('urgentAlertsBox');
+            if (ed > 0) { ub.classList.remove('hidden'); document.getElementById('urgentAlertText').innerText = `${ed} member(s) membership expired`; }
+            else { ub.classList.add('hidden'); }
+        }
+
+        function toggleRevenueHistoryModal(show) {
+            const ov = document.getElementById('revenueHistoryOverlay'), sh = document.getElementById('revenueHistorySheet');
+            if (show) { renderRevenueHistoryReport(); ov.classList.remove('hidden'); setTimeout(() => { sh.classList.remove('bottom-sheet-hidden'); sh.classList.add('bottom-sheet-visible'); }, 10); }
+            else { sh.classList.remove('bottom-sheet-visible'); sh.classList.add('bottom-sheet-hidden'); setTimeout(() => ov.classList.add('hidden'), 350); }
+        }
+
+        function renderRevenueHistoryReport() {
+            const gt = transactions.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+            document.getElementById('allTimeGrandTotal').innerText = '₹' + gt.toLocaleString('en-IN');
+            document.getElementById('allTimeCount').innerText = `${transactions.length} payments`;
+            const mm = {};
+            transactions.forEach(t => { const mk = t.monthKey || '2026-08'; if (!mm[mk]) mm[mk] = { total: 0, count: 0 }; mm[mk].total += (parseFloat(t.amount) || 0); mm[mk].count += 1; });
+            const sk = Object.keys(mm).sort().reverse();
+            const bc = document.getElementById('monthlyBreakdownContainer');
+            bc.innerHTML = '';
+            if (sk.length === 0) { bc.innerHTML = `<p class="text-xs text-slate-500 text-center py-2">No transactions yet.</p>`; return; }
+            sk.forEach(mk => {
+                const row = document.createElement('div');
+                const isSel = (selectedMonthKey === mk || (selectedMonthKey === 'CURRENT' && mk === getMonthKey(new Date())));
+                row.className = `p-3.5 rounded-xl flex items-center justify-between cursor-pointer ${isSel ? 'card-3d stat-card stat-cyan' : 'info-inset'}`;
+                row.onclick = () => { selectedMonthKey = mk; document.getElementById('monthSelector').value = mk; updateStats(); renderRevenueHistoryReport(); };
+                row.innerHTML = `
+                    <div class="relative z-10">
+                        <p class="text-xs font-black text-white flex items-center gap-1.5">
+                            <span>📅</span> ${parseMonthKeyToName(mk)}
+                            ${mk === getMonthKey(new Date()) ? '<span class="text-[8px] badge-active px-1.5 rounded font-bold">Current</span>' : ''}
+                        </p>
+                        <p class="text-[10px] text-slate-400">${mm[mk].count} transaction(s)</p>
+                    </div>
+                    <span class="text-base font-black text-cyan-300 relative z-10">₹${mm[mk].total.toLocaleString('en-IN')}</span>`;
+                bc.appendChild(row);
+            });
+        }
+
+        function generateReceiptUrl(m) { return buildWhatsAppLink(m.phone, `Hello ${m.name}! 👋\n\nWelcome to *Arya Fitness Club Shirpur*! 💪\nReceipt:\n\n📅 *Joining:* ${m.joiningDate}\n⏳ *Expiry:* ${m.expiryDate}\n💳 *Paid:* ₹${m.amount} (${m.method})\n\nContact: ${OWNER_PHONE}\nStay strong! 🔥`); }
+        function generateExpiringAlertUrl(m) { return buildWhatsAppLink(m.phone, `🚨 *REMINDER - Arya Fitness Club Shirpur* 🚨\n\nHi ${m.name}!\n\nMembership expiring on *${m.expiryDate}*.\nPlease renew today! 💪\n\nUPI / Call: ${OWNER_PHONE}`); }
+        function generateExpiredAlertUrl(m) { return buildWhatsAppLink(m.phone, `⚠️ *EXPIRED - Arya Fitness Club Shirpur* ⚠️\n\nHi ${m.name}!\n\nMembership expired on *${m.expiryDate}*.\nRenew today! 🏋️‍♂️🔥\n\nUPI / Call: ${OWNER_PHONE}`); }
+        function buildWhatsAppLink(phone, text) { let p = phone.replace(/[^0-9]/g, ''); if (p.length === 10) p = '91' + p; return `https://api.whatsapp.com/send?phone=${p}&text=${encodeURIComponent(text)}`; }
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            ['dashboard', 'members'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tabName);
+                const nav = document.getElementById(`nav-${t}`);
+                if (nav) nav.className = `flex-1 py-1 flex flex-col items-center justify-center ${t === tabName ? 'text-amber-400 font-bold' : 'text-slate-500 font-normal'} transition`;
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            renderCurrentView();
+        }
+
+        function renderCurrentView() {
+            if (activeTab === 'dashboard') renderDashboardRecentMembers();
+            if (activeTab === 'members') renderMembersList();
+        }
+
+        function renderDashboardRecentMembers() {
+            const list = document.getElementById('dashRecentMembersList');
+            list.innerHTML = '';
+            const recent = members.slice(0, 4);
+            if (recent.length === 0) { list.innerHTML = `<p class="text-[11px] text-slate-500 text-center py-2">No members yet.</p>`; return; }
+            recent.forEach(m => {
+                const st = getStatus(m.expiryDate);
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-2.5 info-inset rounded-xl text-xs';
+                item.innerHTML = `
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-amber-400 text-xs" style="background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.04)); border: 1px solid rgba(245,158,11,0.2);">
+                            ${m.name.charAt(0)}
+                        </div>
+                        <div>
+                            <p class="font-bold text-white leading-tight">${m.name}</p>
+                            <p class="text-[9px] text-slate-400">+91 ${m.phone} · <span class="text-amber-300 font-semibold">${getMemberPlanText(m)}</span></p>
+                        </div>
+                    </div>
+                    <span class="px-2 py-0.5 text-[9px] font-black rounded-full ${st.badge}">${st.label}</span>`;
+                list.appendChild(item);
+            });
+        }
+
+        function renderMembersList() {
+            const container = document.getElementById('membersMobileContainer');
+            const sv = document.getElementById('searchInput').value.toLowerCase().trim();
+            const sb = document.getElementById('sortBy').value;
+            document.getElementById('clearSearchBtn').classList.toggle('hidden', sv === '');
+            container.innerHTML = '';
+
+            let filtered = members.filter(m => {
+                const ms = m.name.toLowerCase().includes(sv) || m.phone.includes(sv);
+                const st = getStatus(m.expiryDate).label;
+                return ms && (activeFilter === 'ALL' || st === activeFilter);
+            });
+            document.getElementById('resultCountText').innerText = `Showing ${filtered.length} Member(s)`;
+            filtered.sort((a, b) => {
+                if (sb === 'OLDEST') return a.id - b.id;
+                if (sb === 'NAME_ASC') return a.name.localeCompare(b.name);
+                return b.id - a.id;
+            });
+
+            if (filtered.length === 0) { container.innerHTML = `<div class="p-8 text-center text-slate-500 card-3d rounded-2xl"><p class="text-3xl mb-1">🔍</p><p class="font-bold text-xs">No matching members.</p></div>`; return; }
+
+            filtered.forEach(m => {
+                const st = getStatus(m.expiryDate);
+                const photo = m.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80';
+                const plan = getMemberPlanText(m);
+
+                let actionBtn = '';
+                if (st.label === 'Expiring Soon') actionBtn = `<a href="${generateExpiringAlertUrl(m)}" target="_blank" class="flex-1 py-2.5 text-amber-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d" style="background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.25);">⚡ Alert</a>`;
+                else if (st.label === 'Expired') actionBtn = `<a href="${generateExpiredAlertUrl(m)}" target="_blank" class="flex-1 py-2.5 text-rose-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d" style="background: rgba(244,63,94,0.1); border-color: rgba(244,63,94,0.25);">⚠️ Alert</a>`;
+                else actionBtn = `<a href="${generateReceiptUrl(m)}" target="_blank" class="flex-1 py-2.5 text-emerald-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.25);">💬 Receipt</a>`;
+
+                const card = document.createElement('div');
+                card.className = `member-card-3d ${st.cardClass} p-4 rounded-2xl space-y-3`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between pl-2">
+                        <div class="flex items-center space-x-3">
+                            <img src="${photo}" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" style="border: 2px solid rgba(255,255,255,0.08); box-shadow: 0 4px 12px -3px rgba(0,0,0,0.5);">
+                            <div>
+                                <h4 class="font-extrabold text-white text-sm leading-tight">${m.name}</h4>
+                                <p class="text-[11px] text-slate-400">+91 ${m.phone}</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-0.5 text-[9px] font-black rounded-full ${st.badge}">${st.label}</span>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-1 info-inset p-2.5 rounded-xl text-[11px] ml-2">
+                        <div><span class="text-slate-500 text-[8px] block font-extrabold uppercase">Joined</span><span class="text-slate-200 font-bold">${m.joiningDate}</span></div>
+                        <div><span class="text-slate-500 text-[8px] block font-extrabold uppercase">Expires</span><span class="text-amber-400 font-bold">${m.expiryDate}</span></div>
+                        <div><span class="text-slate-500 text-[8px] block font-extrabold uppercase">Plan</span><span class="text-amber-300 font-black">${plan}</span></div>
+                        <div><span class="text-slate-500 text-[8px] block font-extrabold uppercase">Fees</span><span class="text-emerald-400 font-bold">₹${m.amount}</span></div>
+                    </div>
+
+                    <div class="flex items-center space-x-2 pl-2 pt-0.5">
+                        <a href="tel:${m.phone}" class="p-2.5 bg-obsidian-900 text-slate-300 rounded-xl btn-3d flex items-center justify-center" title="Call">📞</a>
+                        ${actionBtn}
+                        ${(st.label === 'Expiring Soon' || st.label === 'Expired') ? `<button onclick="openRenewModal(${m.id})" class="px-3.5 py-2.5 text-white font-bold text-xs rounded-xl btn-3d" style="background: linear-gradient(135deg, #10B981, #059669); box-shadow: 0 4px 12px -3px rgba(16,185,129,0.4);">⚡ Renew</button>` : ''}
+                        <button onclick="deleteMember(${m.id})" class="p-2.5 bg-obsidian-950 text-slate-500 rounded-xl btn-3d hover:text-rose-400 flex items-center justify-center" title="Delete">🗑️</button>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function setStatusFilter(status) {
+            activeFilter = status;
+            ['ALL', 'Active', 'Expiring Soon', 'Expired'].forEach(s => {
+                const btn = document.getElementById(`mfilter-${s}`);
+                if (btn) btn.className = `px-4 py-2 rounded-xl text-xs whitespace-nowrap ${s === status ? 'font-black filter-active' : 'font-bold filter-inactive'}`;
+            });
+            renderMembersList();
+        }
+        function filterByStatusAndSwitchTab(s) { switchTab('members'); setStatusFilter(s); }
+
+        function openAddMemberModal() {
+            document.getElementById('memberModalOverlay').classList.remove('hidden');
+            setDefaultJoiningDate();
+            document.getElementById('memberAmount').value = 1000;
+            setTimeout(() => { document.getElementById('memberModalSheet').classList.remove('bottom-sheet-hidden'); document.getElementById('memberModalSheet').classList.add('bottom-sheet-visible'); }, 10);
+        }
+        function closeAddMemberModal() {
+            const sh = document.getElementById('memberModalSheet');
+            sh.classList.remove('bottom-sheet-visible'); sh.classList.add('bottom-sheet-hidden');
+            setTimeout(() => { document.getElementById('memberModalOverlay').classList.add('hidden'); document.getElementById('addMemberForm').reset(); document.getElementById('editMemberId').value = ''; document.getElementById('modalTitle').innerText = 'New Member Pass'; document.getElementById('saveSubmitBtn').innerText = 'Save & Send Receipt'; currentPhotoData = ''; document.getElementById('photoPreview').innerHTML = 'No Pic'; }, 350);
+        }
+        function toggleQRModal(show) {
+            const ov = document.getElementById('qrModalOverlay'), sh = document.getElementById('qrModalSheet');
+            if (show) { ov.classList.remove('hidden'); setTimeout(() => { sh.classList.remove('bottom-sheet-hidden'); sh.classList.add('bottom-sheet-visible'); }, 10); }
+            else { sh.classList.remove('bottom-sheet-visible'); sh.classList.add('bottom-sheet-hidden'); setTimeout(() => ov.classList.add('hidden'), 350); }
+        }
+
+        function triggerCamera() { document.getElementById('cameraInput').click(); }
+        function handlePhotoUpload(e) {
+            const f = e.target.files[0];
+            if (f) { const r = new FileReader(); r.onload = evt => { currentPhotoData = evt.target.result; document.getElementById('photoPreview').innerHTML = `<img src="${currentPhotoData}" class="w-full h-full object-cover">`; }; r.readAsDataURL(f); }
+        }
+
+        // Auto-calculate End Date: 1 month = 30 days
+        function updateEndDate() {
+            const joinVal = document.getElementById('memberJoiningDate').value;
+            const months = parseInt(document.getElementById('memberPlan').value);
+            if (!joinVal) { document.getElementById('memberEndDate').value = ''; return; }
+            const joinDate = new Date(joinVal);
+            const endDate = new Date(joinDate.getTime() + (months * 30 * 24 * 60 * 60 * 1000));
+            document.getElementById('memberEndDate').value = formatDateToDMY(endDate);
+        }
+
+        // Auto-calculate amount: ₹1000 per month
+        function updateAutoAmount() {
+            const months = parseInt(document.getElementById('memberPlan').value);
+            document.getElementById('memberAmount').value = months * 1000;
+        }
+
+        // Set default joining date to today on modal open
+        function setDefaultJoiningDate() {
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            document.getElementById('memberJoiningDate').value = `${y}-${m}-${d}`;
+            updateEndDate();
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('memberName').value.trim();
+            const phone = document.getElementById('memberPhone').value.trim();
+            const amount = document.getElementById('memberAmount').value;
+            const method = document.getElementById('paymentMethod').value;
+            const months = parseInt(document.getElementById('memberPlan').value);
+            const joinVal = document.getElementById('memberJoiningDate').value;
+            const joinDate = new Date(joinVal);
+            const endDate = new Date(joinDate.getTime() + (months * 30 * 24 * 60 * 60 * 1000));
+
+            const nm = { id: Date.now(), name, phone, planMonths: months, joiningDate: formatDateToDMY(joinDate), expiryDate: formatDateToDMY(endDate), amount, method, photo: currentPhotoData, createdTimestamp: Date.now() };
+            members.unshift(nm);
+            transactions.unshift({ id: Date.now(), memberId: nm.id, memberName: name, amount: parseFloat(amount) || 0, method, date: formatDateToDMY(joinDate), monthKey: getMonthKey(joinDate), timestamp: Date.now(), type: 'New Join' });
+            window.open(generateReceiptUrl(nm), '_blank');
+            saveMembers();
+            closeAddMemberModal();
+        }
+
+        function openRenewModal(id) {
+            const m = members.find(i => i.id === id);
+            if (!m) return;
+            document.getElementById('renewMemberId').value = id;
+            document.getElementById('renewMemberNameLabel').innerText = `Renewing: ${m.name} (+91 ${m.phone})`;
+            document.getElementById('renewAmount').value = '';
+            document.getElementById('renewMonths').value = '1';
+            document.getElementById('renewPaymentMethod').value = 'UPI / Online';
+            const ov = document.getElementById('renewModalOverlay'), sh = document.getElementById('renewModalSheet');
+            ov.classList.remove('hidden');
+            setTimeout(() => { sh.classList.remove('bottom-sheet-hidden'); sh.classList.add('bottom-sheet-visible'); }, 10);
+        }
+
+        function closeRenewModal() {
+            const sh = document.getElementById('renewModalSheet');
+            sh.classList.remove('bottom-sheet-visible'); sh.classList.add('bottom-sheet-hidden');
+            setTimeout(() => { document.getElementById('renewModalOverlay').classList.add('hidden'); document.getElementById('renewForm').reset(); }, 350);
+        }
+
+        function handleRenewSubmit(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('renewMemberId').value);
+            const months = parseInt(document.getElementById('renewMonths').value);
+            const amount = document.getElementById('renewAmount').value;
+            const method = document.getElementById('renewPaymentMethod').value;
+
+            let rm = null;
+            members = members.map(m => {
+                if (m.id === id) {
+                    const ce = parseDMYToDate(m.expiryDate) > new Date() ? parseDMYToDate(m.expiryDate) : new Date();
+                    ce.setMonth(ce.getMonth() + months);
+                    rm = { ...m, expiryDate: formatDateToDMY(ce), amount: amount, method: method, planMonths: months, createdTimestamp: Date.now() };
+                    return rm;
+                }
+                return m;
+            });
+            if (rm) {
+                transactions.unshift({ id: Date.now(), memberId: rm.id, memberName: rm.name, amount: parseFloat(amount) || 0, method: method, date: formatDateToDMY(new Date()), monthKey: getMonthKey(new Date()), timestamp: Date.now(), type: 'Renewal' });
+            }
+            saveMembers();
+            closeRenewModal();
+
+            if (rm) {
+                const monthText = months === 12 ? '1 Year' : `${months} Month${months > 1 ? 's' : ''}`;
+                const msg = `🎉 *RENEWED - Arya Fitness Club Shirpur* 🎉\n\nHi ${rm.name}!\n\nMembership renewed for *${monthText}*!\n⏳ *New Expiry:* ${rm.expiryDate}\n💳 *Paid:* ₹${amount} (${method})\n\nKeep grinding! 💪🔥`;
+                window.open(buildWhatsAppLink(rm.phone, msg), '_blank');
+            }
+        }
+
+        function deleteMember(id) {
+            const m = members.find(i => i.id === id);
+            if (confirm(`Delete "${m ? m.name : 'member'}"?`)) { members = members.filter(m => m.id !== id); transactions = transactions.filter(t => t.memberId !== id); saveMembers(); }
+        }
+
+        function clearSearch() { document.getElementById('searchInput').value = ''; renderMembersList(); }
+        function copyUpi() { navigator.clipboard.writeText("7620820352@ybl"); alert("UPI ID copied: 7620820352@ybl"); }
+
+        // ===== EXPENSE TRACKER =====
+        let expenses = JSON.parse(localStorage.getItem('arya_fitness_expenses_v1')) || [];
+
+        function saveExpenses() {
+            localStorage.setItem('arya_fitness_expenses_v1', JSON.stringify(expenses));
+        }
+
+        function toggleHeaderMenu() {
+            const dd = document.getElementById('headerMenuDropdown');
+            dd.classList.toggle('hidden');
+            // Close on outside click
+            if (!dd.classList.contains('hidden')) {
+                setTimeout(() => {
+                    document.addEventListener('click', closeMenuOutside);
+                }, 10);
+            }
+        }
+        function closeMenuOutside(e) {
+            const dd = document.getElementById('headerMenuDropdown');
+            const btn = document.getElementById('menuBtn');
+            if (!dd.contains(e.target) && !btn.contains(e.target)) {
+                dd.classList.add('hidden');
+                document.removeEventListener('click', closeMenuOutside);
+            }
+        }
+
+        function openExpenseTracker() {
+            populateExpenseMonthSelector();
+            renderExpenseList();
+            const ov = document.getElementById('expenseTrackerOverlay'), sh = document.getElementById('expenseTrackerSheet');
+            ov.classList.remove('hidden');
+            setTimeout(() => { sh.classList.remove('bottom-sheet-hidden'); sh.classList.add('bottom-sheet-visible'); }, 10);
+        }
+        function closeExpenseTracker() {
+            const sh = document.getElementById('expenseTrackerSheet');
+            sh.classList.remove('bottom-sheet-visible'); sh.classList.add('bottom-sheet-hidden');
+            setTimeout(() => document.getElementById('expenseTrackerOverlay').classList.add('hidden'), 350);
+        }
+
+        function openAddExpenseModal() {
+            // Set default date to today
+            const today = new Date();
+            document.getElementById('expenseDate').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+            document.getElementById('expenseDesc').value = '';
+            document.getElementById('expenseAmount').value = '';
+            const ov = document.getElementById('addExpenseOverlay'), sh = document.getElementById('addExpenseSheet');
+            ov.classList.remove('hidden');
+            setTimeout(() => { sh.classList.remove('bottom-sheet-hidden'); sh.classList.add('bottom-sheet-visible'); }, 10);
+        }
+        function closeAddExpenseModal() {
+            const sh = document.getElementById('addExpenseSheet');
+            sh.classList.remove('bottom-sheet-visible'); sh.classList.add('bottom-sheet-hidden');
+            setTimeout(() => { document.getElementById('addExpenseOverlay').classList.add('hidden'); document.getElementById('addExpenseForm').reset(); }, 350);
+        }
+
+        function handleAddExpense(e) {
+            e.preventDefault();
+            const desc = document.getElementById('expenseDesc').value.trim();
+            const dateVal = document.getElementById('expenseDate').value;
+            const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
+            const dateObj = new Date(dateVal);
+            const expense = {
+                id: Date.now(),
+                description: desc,
+                date: formatDateToDMY(dateObj),
+                monthKey: getMonthKey(dateObj),
+                amount: amount,
+                timestamp: Date.now()
+            };
+            expenses.unshift(expense);
+            saveExpenses();
+            closeAddExpenseModal();
+            populateExpenseMonthSelector();
+            renderExpenseList();
+        }
+
+        function deleteExpense(id) {
+            if (confirm('Delete this expense?')) {
+                expenses = expenses.filter(ex => ex.id !== id);
+                saveExpenses();
+                renderExpenseList();
+            }
+        }
+
+        function populateExpenseMonthSelector() {
+            const sel = document.getElementById('expenseMonthSelector');
+            const curKey = getMonthKey(new Date());
+            const monthSet = new Set([curKey]);
+            expenses.forEach(ex => { if (ex.monthKey) monthSet.add(ex.monthKey); });
+            const sorted = Array.from(monthSet).sort().reverse();
+            const prevVal = sel.value;
+            sel.innerHTML = '';
+            sorted.forEach(mk => {
+                const o = document.createElement('option');
+                o.value = mk;
+                o.innerText = mk === curKey ? `Current (${parseMonthKeyToName(mk)})` : parseMonthKeyToName(mk);
+                sel.appendChild(o);
+            });
+            const oAll = document.createElement('option'); oAll.value = 'ALL'; oAll.innerText = 'All Time'; sel.appendChild(oAll);
+            if (prevVal && [...sel.options].some(o => o.value === prevVal)) sel.value = prevVal;
+            else sel.value = curKey;
+        }
+
+        function renderExpenseList() {
+            const mk = document.getElementById('expenseMonthSelector').value;
+            const filtered = mk === 'ALL' ? expenses : expenses.filter(ex => ex.monthKey === mk);
+            const total = filtered.reduce((s, ex) => s + (ex.amount || 0), 0);
+            document.getElementById('expenseTotalAmount').innerText = '₹' + total.toLocaleString('en-IN');
+            document.getElementById('expenseTotalCount').innerText = filtered.length + ' entries';
+
+            const container = document.getElementById('expenseListContainer');
+            container.innerHTML = '';
+            if (filtered.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-6">No expenses recorded for this month.</p>';
+                return;
+            }
+            filtered.forEach(ex => {
+                const row = document.createElement('div');
+                row.className = 'p-3 info-inset rounded-xl flex items-center justify-between';
+                row.innerHTML = `
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-base" style="background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.2);">💸</div>
+                        <div>
+                            <p class="text-xs font-bold text-white">${ex.description}</p>
+                            <p class="text-[10px] text-slate-400">${ex.date}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm font-black text-rose-400">₹${ex.amount.toLocaleString('en-IN')}</span>
+                        <button onclick="deleteExpense(${ex.id})" class="text-slate-500 hover:text-rose-400 text-xs p-1" title="Delete">🗑️</button>
+                    </div>`;
+                container.appendChild(row);
+            });
+        }
+
+        // ===== AUTH & LOGIN MANAGEMENT =====
+        function checkAuthState() {
+            const isLoggedIn = localStorage.getItem('arya_fitness_logged_in') === 'true';
+            const loginScreen = document.getElementById('loginScreen');
+            const appHeader = document.querySelector('header');
+            const appMain = document.querySelector('main');
+            const appNav = document.querySelector('nav');
+
+            if (isLoggedIn) {
+                if (loginScreen) loginScreen.classList.add('hidden');
+                if (appHeader) appHeader.classList.remove('hidden');
+                if (appMain) appMain.classList.remove('hidden');
+                if (appNav) appNav.classList.remove('hidden');
+            } else {
+                if (loginScreen) loginScreen.classList.remove('hidden');
+                if (appHeader) appHeader.classList.add('hidden');
+                if (appMain) appMain.classList.add('hidden');
+                if (appNav) appNav.classList.add('hidden');
+            }
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('loginUserId').value.trim();
+            const pass = document.getElementById('loginPassword').value.trim();
+            const errBox = document.getElementById('loginErrorMsg');
+
+            const validId = id.toLowerCase() === 'arunrajput07' || id.toLowerCase() === 'admin';
+            const validPass = pass === 'arunR@2728' || pass === '123';
+
+            if (validId && validPass) {
+                localStorage.setItem('arya_fitness_logged_in', 'true');
+                if (errBox) errBox.classList.add('hidden');
+                document.getElementById('loginForm').reset();
+                checkAuthState();
+                switchTab('dashboard');
+            } else {
+                if (errBox) errBox.classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.setItem('arya_fitness_logged_in', 'false');
+                checkAuthState();
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('loginPassword');
+            const toggle = document.getElementById('showPasswordToggle');
+            if (passInput && toggle) {
+                passInput.type = toggle.checked ? 'text' : 'password';
+            }
+        }
+
+        saveMembers();
+        checkAuthState();
+        switchTab('dashboard');
+    </script>
+</body>
+</html>
