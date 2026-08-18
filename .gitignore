@@ -1,0 +1,13 @@
+# Environment variables with real secrets — NEVER commit
+functions/.env
+
+# Node modules
+functions/node_modules/
+
+# Firebase debug logs
+firebase-debug.log
+firebase-debug.*.log
+.firebaserc.local
+
+# macOS
+.DS_Store

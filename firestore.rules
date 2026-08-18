@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Members, transactions, expenses — existing collections
+    // Allow read/write from your app (frontend uses Firebase SDK directly)
+    match /members/{memberId} {
+      allow read, write: if true;
+    }
+    match /transactions/{txId} {
+      allow read, write: if true;
+    }
+    match /expenses/{expId} {
+      allow read, write: if true;
+    }
+    // smsNotifications — read by frontend (admin SMS history panel)
+    // Write only via Cloud Functions (using Admin SDK, bypasses rules)
+    match /smsNotifications/{notifId} {
+      allow read: if true;
+      allow write: if false; // Only Cloud Functions write here
+    }
+  }
+}

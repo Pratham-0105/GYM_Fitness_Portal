@@ -548,11 +548,52 @@
 
         </section>
 
+        <!-- TAB 3: SMS HISTORY -->
+        <section id="view-sms" class="hidden space-y-3">
+
+            <!-- Header row -->
+            <div class="card-3d p-3.5 rounded-2xl flex items-center justify-between" style="background: linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(15,23,42,0.6) 100%); border: 1px solid rgba(139,92,246,0.18);">
+                <div>
+                    <h2 class="text-xs font-black text-white flex items-center gap-1.5">📱 SMS Notifications</h2>
+                    <p class="text-[10px] text-violet-400 font-bold">2Factor delivery log</p>
+                </div>
+                <button onclick="openTestSmsModal()" class="px-3 py-1.5 text-xs font-black rounded-xl flex items-center space-x-1.5" style="background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.2)); border: 1px solid rgba(139,92,246,0.3); color: #c4b5fd;">
+                    <span>🧪</span><span>Test SMS</span>
+                </button>
+            </div>
+
+            <!-- Filter chips — by type -->
+            <div class="flex space-x-2 overflow-x-auto no-scrollbar py-0.5">
+                <button onclick="setSmsTypeFilter('ALL')" id="smsfilter-ALL" class="px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap filter-active">All</button>
+                <button onclick="setSmsTypeFilter('PAYMENT_SUCCESS')" id="smsfilter-PAYMENT_SUCCESS" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">💳 Payment</button>
+                <button onclick="setSmsTypeFilter('EXPIRING_SOON')" id="smsfilter-EXPIRING_SOON" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">⚠️ Expiring</button>
+                <button onclick="setSmsTypeFilter('EXPIRED')" id="smsfilter-EXPIRED" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">❌ Expired</button>
+            </div>
+
+            <!-- Filter chips — by status -->
+            <div class="flex space-x-2 overflow-x-auto no-scrollbar py-0.5">
+                <button onclick="setSmsStatusFilter('ALL')" id="smsstatus-ALL" class="px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap filter-active">Any Status</button>
+                <button onclick="setSmsStatusFilter('SENT')" id="smsstatus-SENT" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">✅ Sent</button>
+                <button onclick="setSmsStatusFilter('FAILED')" id="smsstatus-FAILED" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">❌ Failed</button>
+                <button onclick="setSmsStatusFilter('PENDING')" id="smsstatus-PENDING" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">⏳ Pending</button>
+            </div>
+
+            <!-- SMS list -->
+            <div id="smsHistoryContainer" class="space-y-2.5">
+                <div class="p-8 text-center text-slate-500 card-3d rounded-2xl">
+                    <p class="text-2xl mb-1">📱</p>
+                    <p class="font-bold text-xs">Loading SMS history...</p>
+                </div>
+            </div>
+
+        </section>
+
     </main>
 
 
+
     <!-- BOTTOM NAV BAR -->
-    <nav class="fixed bottom-0 left-0 right-0 z-40 bottom-bar-3d px-6 py-2 flex justify-around items-center max-w-lg mx-auto">
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bottom-bar-3d px-2 py-2 flex justify-around items-center max-w-lg mx-auto">
         <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex-1 py-1 flex flex-col items-center justify-center text-amber-400 transition">
             <span class="text-xl leading-none">🏠</span>
             <span class="text-[10px] font-black mt-1">Home</span>
@@ -565,6 +606,12 @@
         <button onclick="switchTab('members')" id="nav-members" class="flex-1 py-1 flex flex-col items-center justify-center text-slate-500 transition">
             <span class="text-xl leading-none">👥</span>
             <span class="text-[10px] font-bold mt-1">Members</span>
+        </button>
+
+        <button onclick="switchTab('sms')" id="nav-sms" class="flex-1 py-1 flex flex-col items-center justify-center text-slate-500 transition relative">
+            <span class="text-xl leading-none">📱</span>
+            <span class="text-[10px] font-bold mt-1">SMS</span>
+            <span id="smsFailedBadge" class="hidden absolute top-0 right-2 w-3 h-3 bg-rose-500 rounded-full border-2 border-obsidian-950"></span>
         </button>
     </nav>
 
@@ -854,10 +901,45 @@
     </div>
 
 
+    <!-- MODAL: TEST SMS -->
+    <div id="testSmsOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-lg z-50 hidden flex items-end justify-center">
+        <div id="testSmsSheet" class="bottom-sheet bottom-sheet-hidden w-full max-w-lg rounded-t-3xl p-5" style="background: linear-gradient(165deg, rgba(26,35,64,0.97) 0%, rgba(10,15,30,0.95) 100%); border-top: 1px solid rgba(139,92,246,0.3); box-shadow: 0 -20px 60px -10px rgba(0,0,0,0.6);">
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-3"></div>
+            <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3">
+                <div>
+                    <h3 class="text-base font-black text-white flex items-center gap-1.5">🧪 Test SMS</h3>
+                    <p class="text-[10px] text-violet-400 font-bold">Send a test notification</p>
+                </div>
+                <button onclick="closeTestSmsModal()" class="text-slate-400 hover:text-white text-2xl font-bold p-1">&times;</button>
+            </div>
+            <form id="testSmsForm" class="space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Phone Number *</label>
+                    <input type="tel" id="testSmsPhone" required placeholder="10-digit mobile number" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">SMS Type *</label>
+                    <select id="testSmsType" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                        <option value="PAYMENT_SUCCESS">💳 Payment Successful</option>
+                        <option value="EXPIRING_SOON">⚠️ Expiring Soon</option>
+                        <option value="EXPIRED">❌ Expired</option>
+                    </select>
+                </div>
+                <div id="testSmsResult" class="hidden p-2.5 rounded-xl text-[11px] font-bold text-center"></div>
+                <div class="flex space-x-2.5 pt-1">
+                    <button type="button" onclick="closeTestSmsModal()" class="flex-1 py-3.5 rounded-xl text-slate-400 font-bold btn-3d bg-obsidian-900">Cancel</button>
+                    <button type="submit" id="testSmsSubmitBtn" class="flex-1 py-3.5 font-black rounded-xl" style="background: linear-gradient(135deg, #8B5CF6, #6366F1); color: #fff; box-shadow: 0 4px 14px -3px rgba(139,92,246,0.5);">Send Test</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <!-- Application Script (Firebase Enabled) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -873,12 +955,21 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        // Initialize Firebase Functions (asia-south1 = Mumbai)
+        const functions = getFunctions(app, "asia-south1");
+
+        // ── SMS: Admin token ─────────────────────────────────────────────────
+        // This token is also set in functions/.env as ADMIN_TOKEN.
+        // It is a simple shared secret; the real 2Factor API key stays server-side.
+        const ADMIN_TOKEN = "arya-admin-token-change-me";
 
         const OWNER_PHONE = "+917620820352";
         let activeTab = 'dashboard';
         let activeFilter = 'ALL';
         let currentPhotoData = '';
         let selectedMonthKey = 'CURRENT';
+        let activeSmsFilter = 'ALL';
+        let activeSmsStatusFilter = 'ALL';
 
         const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -1147,10 +1238,18 @@
 
         function switchTab(tabName) {
             activeTab = tabName;
-            ['dashboard', 'members'].forEach(t => {
+            ['dashboard', 'members', 'sms'].forEach(t => {
                 document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tabName);
                 const nav = document.getElementById(`nav-${t}`);
-                if (nav) nav.className = `flex-1 py-1 flex flex-col items-center justify-center ${t === tabName ? 'text-amber-400 font-bold' : 'text-slate-500 font-normal'} transition`;
+                if (nav) {
+                    // sms nav has 'relative' class always, preserve it
+                    const isActive = t === tabName;
+                    if (t === 'sms') {
+                        nav.className = `flex-1 py-1 flex flex-col items-center justify-center ${isActive ? 'text-violet-400 font-bold' : 'text-slate-500 font-normal'} transition relative`;
+                    } else {
+                        nav.className = `flex-1 py-1 flex flex-col items-center justify-center ${isActive ? 'text-amber-400 font-bold' : 'text-slate-500 font-normal'} transition`;
+                    }
+                }
             });
             window.scrollTo({ top: 0, behavior: 'smooth' });
             renderCurrentView();
@@ -1159,6 +1258,7 @@
         function renderCurrentView() {
             if (activeTab === 'dashboard') renderDashboardRecentMembers();
             if (activeTab === 'members') renderMembersList();
+            if (activeTab === 'sms') renderSmsHistory();
         }
 
         function renderDashboardRecentMembers() {
@@ -1325,7 +1425,8 @@
             const endDate = new Date(joinDate.getTime() + (months * 30 * 24 * 60 * 60 * 1000));
 
             const nm = { id: Date.now(), name, phone, planMonths: months, joiningDate: formatDateToDMY(joinDate), expiryDate: formatDateToDMY(endDate), amount, method, photo: currentPhotoData, createdTimestamp: Date.now() };
-            const tx = { id: Date.now(), memberId: nm.id, memberName: name, amount: parseFloat(amount) || 0, method, date: formatDateToDMY(joinDate), monthKey: getMonthKey(joinDate), timestamp: Date.now(), type: 'New Join' };
+            // tx.id must be different from nm.id for unique SMS key — add +1
+            const tx = { id: Date.now() + 1, memberId: nm.id, memberName: name, amount: parseFloat(amount) || 0, method, date: formatDateToDMY(joinDate), monthKey: getMonthKey(joinDate), timestamp: Date.now(), type: 'New Join' };
 
             members.unshift(nm);
             transactions.unshift(tx);
@@ -1335,6 +1436,18 @@
                 await setDoc(doc(db, "transactions", String(tx.id)), tx);
             } catch (err) {
                 console.error("Firestore save error: ", err);
+            }
+
+            // ── SMS: Payment Successful ───────────────────────────────────────
+            // Fire and forget — SMS failure must NOT affect payment success.
+            // WhatsApp receipt link continues working independently.
+            try {
+                const sendSmsOnMemberSave = httpsCallable(functions, 'sendSmsOnMemberSave');
+                sendSmsOnMemberSave({ member: nm, transaction: tx, adminToken: ADMIN_TOKEN })
+                    .then(result => console.log('[SMS] Payment success SMS triggered:', result.data))
+                    .catch(smsErr => console.warn('[SMS] Payment success SMS failed (payment still saved):', smsErr.message));
+            } catch (smsErr) {
+                console.warn('[SMS] Could not call SMS function (payment still saved):', smsErr.message);
             }
 
             saveMembersAndTransactions();
@@ -1387,6 +1500,17 @@
                     await setDoc(doc(db, "transactions", String(tx.id)), tx);
                 } catch (err) {
                     console.error("Firestore save error on renew: ", err);
+                }
+
+                // ── SMS: Payment Successful (Renewal) ─────────────────────────
+                // SMS failure must NOT affect renewal success.
+                try {
+                    const sendSmsOnRenewal = httpsCallable(functions, 'sendSmsOnRenewal');
+                    sendSmsOnRenewal({ member: rm, transaction: tx, adminToken: ADMIN_TOKEN })
+                        .then(result => console.log('[SMS] Renewal SMS triggered:', result.data))
+                        .catch(smsErr => console.warn('[SMS] Renewal SMS failed (renewal still saved):', smsErr.message));
+                } catch (smsErr) {
+                    console.warn('[SMS] Could not call renewal SMS function (renewal still saved):', smsErr.message);
                 }
             }
 
@@ -1617,6 +1741,194 @@
             }
         }
 
+        // ============================================================
+        // SMS HISTORY — Read from Firestore smsNotifications collection
+        // ============================================================
+
+        async function renderSmsHistory() {
+            const container = document.getElementById('smsHistoryContainer');
+            container.innerHTML = `<div class="p-6 text-center text-slate-500 card-3d rounded-2xl"><p class="text-2xl mb-1">⏳</p><p class="font-bold text-xs">Loading...</p></div>`;
+
+            try {
+                let q = collection(db, 'smsNotifications');
+                const snap = await getDocs(q);
+                let notifications = [];
+                snap.forEach(d => notifications.push(d.data()));
+
+                // Sort by createdAt descending
+                notifications.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                // Apply type filter
+                if (activeSmsFilter !== 'ALL') {
+                    notifications = notifications.filter(n => n.notificationType === activeSmsFilter);
+                }
+                // Apply status filter
+                if (activeSmsStatusFilter !== 'ALL') {
+                    notifications = notifications.filter(n => n.status === activeSmsStatusFilter);
+                }
+
+                // Update failed badge on nav icon
+                const failedCount = notifications.filter(n => n.status === 'FAILED').length;
+                const badge = document.getElementById('smsFailedBadge');
+                if (badge) badge.classList.toggle('hidden', failedCount === 0);
+
+                container.innerHTML = '';
+
+                if (notifications.length === 0) {
+                    container.innerHTML = `<div class="p-8 text-center text-slate-500 card-3d rounded-2xl"><p class="text-3xl mb-2">📭</p><p class="font-bold text-xs">No SMS notifications yet.</p><p class="text-[10px] mt-1 text-slate-600">They appear here after members are saved.</p></div>`;
+                    return;
+                }
+
+                notifications.forEach(n => {
+                    const card = document.createElement('div');
+                    card.className = 'card-3d p-3.5 rounded-2xl space-y-2';
+
+                    const typeEmoji = { PAYMENT_SUCCESS: '💳', EXPIRING_SOON: '⚠️', EXPIRED: '❌' };
+                    const typeLabel = { PAYMENT_SUCCESS: 'Payment Success', EXPIRING_SOON: 'Expiring Soon', EXPIRED: 'Expired' };
+                    const statusStyle = {
+                        SENT:    'background: rgba(16,185,129,0.12); color: #6EE7B7; border: 1px solid rgba(16,185,129,0.3);',
+                        FAILED:  'background: rgba(244,63,94,0.12); color: #FDA4AF; border: 1px solid rgba(244,63,94,0.3);',
+                        PENDING: 'background: rgba(245,158,11,0.12); color: #FCD34D; border: 1px solid rgba(245,158,11,0.3);'
+                    };
+
+                    const sentDate = n.sentAt ? new Date(n.sentAt).toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+                    const emoji = typeEmoji[n.notificationType] || '📱';
+                    const label = typeLabel[n.notificationType] || n.notificationType;
+                    const statusSty = statusStyle[n.status] || statusStyle.PENDING;
+
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0" style="background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.2);">${emoji}</div>
+                                <div>
+                                    <p class="text-xs font-black text-white leading-tight">${n.memberName || '—'}</p>
+                                    <p class="text-[10px] text-slate-400">+91 ${String(n.phoneNumber || '').replace(/^91/, '')}</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 text-[9px] font-black rounded-full" style="${statusSty}">${n.status}</span>
+                        </div>
+                        <div class="info-inset rounded-xl p-2.5 space-y-1 text-[10px]">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500 font-bold">Type</span>
+                                <span class="text-slate-200 font-bold">${label}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500 font-bold">Sent</span>
+                                <span class="text-slate-200">${sentDate}</span>
+                            </div>
+                            ${n.providerMessageId ? `<div class="flex items-center justify-between"><span class="text-slate-500 font-bold">Msg ID</span><span class="text-amber-300 font-mono text-[9px]">${n.providerMessageId}</span></div>` : ''}
+                            ${n.errorMessage ? `<div class="mt-1 p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[9px]">⚠️ ${n.errorMessage}</div>` : ''}
+                        </div>
+                        ${n.status !== 'SENT' ? `<button onclick="retrySmsNotification('${n.notificationId}')" class="w-full py-2 text-xs font-black rounded-xl" style="background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); color: #c4b5fd;">🔁 Resend SMS</button>` : ''}
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                console.error('SMS history load error:', err);
+                container.innerHTML = `<div class="p-6 text-center card-3d rounded-2xl"><p class="text-rose-400 font-bold text-xs">⚠️ Could not load SMS history.</p><p class="text-[10px] text-slate-500 mt-1">${err.message}</p></div>`;
+            }
+        }
+
+        function setSmsTypeFilter(type) {
+            activeSmsFilter = type;
+            ['ALL', 'PAYMENT_SUCCESS', 'EXPIRING_SOON', 'EXPIRED'].forEach(t => {
+                const btn = document.getElementById(`smsfilter-${t}`);
+                if (btn) btn.className = `px-3 py-1.5 rounded-xl text-xs whitespace-nowrap ${t === type ? 'font-black filter-active' : 'font-bold filter-inactive'}`;
+            });
+            renderSmsHistory();
+        }
+
+        function setSmsStatusFilter(status) {
+            activeSmsStatusFilter = status;
+            ['ALL', 'SENT', 'FAILED', 'PENDING'].forEach(s => {
+                const btn = document.getElementById(`smsstatus-${s}`);
+                if (btn) btn.className = `px-3 py-1.5 rounded-xl text-xs whitespace-nowrap ${s === status ? 'font-black filter-active' : 'font-bold filter-inactive'}`;
+            });
+            renderSmsHistory();
+        }
+
+        // ── RESEND (retry) a FAILED notification ──────────────────────────────
+        async function retrySmsNotification(notificationId) {
+            const btn = document.querySelector(`button[onclick="retrySmsNotification('${notificationId}')"]`);
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Retrying...'; }
+            try {
+                const retrySms = httpsCallable(functions, 'retrySms');
+                const result = await retrySms({ notificationId, adminToken: ADMIN_TOKEN });
+                if (result.data && result.data.success) {
+                    showToast('✅ SMS resent successfully!', 'emerald');
+                } else {
+                    showToast('⚠️ Retry attempted but SMS still failed.', 'amber');
+                }
+            } catch (err) {
+                console.error('Retry SMS error:', err);
+                showToast('❌ Retry failed: ' + (err.message || 'Unknown error'), 'rose');
+            }
+            setTimeout(() => renderSmsHistory(), 1500);
+        }
+
+        // ── TEST SMS MODAL ─────────────────────────────────────────────────────
+        function openTestSmsModal() {
+            document.getElementById('testSmsResult').classList.add('hidden');
+            document.getElementById('testSmsPhone').value = '';
+            document.getElementById('testSmsSubmitBtn').disabled = false;
+            document.getElementById('testSmsSubmitBtn').textContent = 'Send Test';
+            const ov = document.getElementById('testSmsOverlay');
+            const sh = document.getElementById('testSmsSheet');
+            ov.classList.remove('hidden');
+            setTimeout(() => { sh.classList.remove('bottom-sheet-hidden'); sh.classList.add('bottom-sheet-visible'); }, 10);
+        }
+
+        function closeTestSmsModal() {
+            const sh = document.getElementById('testSmsSheet');
+            sh.classList.remove('bottom-sheet-visible'); sh.classList.add('bottom-sheet-hidden');
+            setTimeout(() => { document.getElementById('testSmsOverlay').classList.add('hidden'); document.getElementById('testSmsForm').reset(); }, 350);
+        }
+
+        async function handleTestSmsSubmit(e) {
+            e.preventDefault();
+            const phone = document.getElementById('testSmsPhone').value.trim();
+            const smsType = document.getElementById('testSmsType').value;
+            const resultEl = document.getElementById('testSmsResult');
+            const btn = document.getElementById('testSmsSubmitBtn');
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Sending...';
+            resultEl.classList.add('hidden');
+
+            try {
+                const testSms = httpsCallable(functions, 'testSms');
+                const result = await testSms({ phone, smsType, adminToken: ADMIN_TOKEN });
+                const mode = result.data.mode || 'mock';
+                const modeNote = mode === 'mock' ? ' (Mock mode — no real SMS sent)' : '';
+                resultEl.style = 'background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #6EE7B7;';
+                resultEl.textContent = `✅ Test SMS triggered successfully${modeNote}`;
+                resultEl.classList.remove('hidden');
+            } catch (err) {
+                console.error('Test SMS error:', err);
+                resultEl.style = 'background: rgba(244,63,94,0.12); border: 1px solid rgba(244,63,94,0.3); color: #FDA4AF;';
+                resultEl.textContent = `❌ Failed: ${err.message || 'Cloud Function not deployed yet'}`;
+                resultEl.classList.remove('hidden');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Send Test';
+        }
+
+        // ── TOAST HELPER ───────────────────────────────────────────────────────
+        function showToast(message, color = 'amber') {
+            const colorMap = {
+                amber:   'background: rgba(245,158,11,0.9); color: #050810;',
+                emerald: 'background: rgba(16,185,129,0.9); color: #050810;',
+                rose:    'background: rgba(244,63,94,0.9); color: #fff;'
+            };
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-24 left-1/2 z-[100] px-4 py-2.5 rounded-2xl text-xs font-black shadow-2xl';
+            toast.style = `${colorMap[color] || colorMap.amber} transform: translateX(-50%); max-width: 320px; text-align: center;`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.5s'; setTimeout(() => toast.remove(), 500); }, 3000);
+        }
+
         // Global attachments to make elements work with inline buttons
         window.switchTab = switchTab;
         window.openAddMemberModal = openAddMemberModal;
@@ -1640,12 +1952,19 @@
         window.closeRenewModal = closeRenewModal;
         window.deleteMember = deleteMember;
         window.deleteExpense = deleteExpense;
+        // SMS function exports
+        window.setSmsTypeFilter = setSmsTypeFilter;
+        window.setSmsStatusFilter = setSmsStatusFilter;
+        window.retrySmsNotification = retrySmsNotification;
+        window.openTestSmsModal = openTestSmsModal;
+        window.closeTestSmsModal = closeTestSmsModal;
 
         // Form listeners
         document.getElementById('loginForm').onsubmit = handleLoginSubmit;
         document.getElementById('addMemberForm').onsubmit = handleFormSubmit;
         document.getElementById('renewForm').onsubmit = handleRenewSubmit;
         document.getElementById('addExpenseForm').onsubmit = handleAddExpense;
+        document.getElementById('testSmsForm').onsubmit = handleTestSmsSubmit;
 
         // Input changes
         document.getElementById('memberPlan').onchange = () => { updateEndDate(); updateAutoAmount(); };
