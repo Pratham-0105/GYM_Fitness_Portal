@@ -180,6 +180,54 @@ exports.scheduledExpiryCheck = functions
   });
 
 // ============================================================================
+// FUNCTION 3B: triggerManualExpiryScan
+// Admin-callable: trigger instant member expiry scan & SMS dispatching.
+// ============================================================================
+exports.triggerManualExpiryScan = functions
+  .region("asia-south1")
+  .https.onCall(async (data, context) => {
+    verifyAdminToken(data);
+
+    console.log("[Manual Scan] Running member expiry scan on demand...");
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const membersSnap = await db.collection("members").get();
+    const members = [];
+    membersSnap.forEach((doc) => members.push(doc.data()));
+
+    let expiringSoonCount = 0;
+    let expiredCount = 0;
+
+    for (const member of members) {
+      if (!member.phone || !member.expiryDate) continue;
+
+      const expiryDate = parseDMY(member.expiryDate);
+      expiryDate.setHours(0, 0, 0, 0);
+
+      const diffMs = expiryDate - today;
+      const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+      // Check expiring soon (within 5 days or 2 days)
+      if (diffDays >= 0 && diffDays <= 5) {
+        const res = await sendExpiringSoonSMS(member, db);
+        if (res && res.success) expiringSoonCount++;
+      } else if (diffDays < 0) {
+        const res = await sendExpiredSMS(member, db);
+        if (res && res.success) expiredCount++;
+      }
+    }
+
+    return {
+      success: true,
+      scanned: members.length,
+      expiringSoonSent: expiringSoonCount,
+      expiredSent: expiredCount,
+    };
+  });
+
+// ============================================================================
 // FUNCTION 4: retrySms
 // Admin-only: retry a FAILED or PENDING SMS notification.
 // ============================================================================

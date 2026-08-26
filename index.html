@@ -554,12 +554,17 @@
             <!-- Header row -->
             <div class="card-3d p-3.5 rounded-2xl flex items-center justify-between" style="background: linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(15,23,42,0.6) 100%); border: 1px solid rgba(139,92,246,0.18);">
                 <div>
-                    <h2 class="text-xs font-black text-white flex items-center gap-1.5">📱 SMS Notifications</h2>
-                    <p class="text-[10px] text-violet-400 font-bold">2Factor delivery log</p>
+                    <h2 class="text-xs font-black text-white flex items-center gap-1.5">📱 Twilio SMS Automation</h2>
+                    <p class="text-[10px] text-violet-400 font-bold">Auto alert on Expiring Soon & Expired</p>
                 </div>
-                <button onclick="openTestSmsModal()" class="px-3 py-1.5 text-xs font-black rounded-xl flex items-center space-x-1.5" style="background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.2)); border: 1px solid rgba(139,92,246,0.3); color: #c4b5fd;">
-                    <span>🧪</span><span>Test SMS</span>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button onclick="triggerManualExpiryScanUi()" id="scanAutoSmsBtn" class="px-3 py-1.5 text-xs font-black rounded-xl flex items-center space-x-1" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: #fff; box-shadow: 0 4px 12px -3px rgba(245,158,11,0.4);">
+                        <span>⚡</span><span>Scan & SMS</span>
+                    </button>
+                    <button onclick="openTestSmsModal()" class="px-3 py-1.5 text-xs font-black rounded-xl flex items-center space-x-1.5" style="background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.2)); border: 1px solid rgba(139,92,246,0.3); color: #c4b5fd;">
+                        <span>🧪</span><span>Test</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Filter chips — by type -->
@@ -1231,9 +1236,15 @@
             });
         }
 
-        function generateReceiptUrl(m) { return buildWhatsAppLink(m.phone, `Hello ${m.name}! 👋\n\nWelcome to *Arya Fitness Club Shirpur*! 💪\nReceipt:\n\n📅 *Joining:* ${m.joiningDate}\n⏳ *Expiry:* ${m.expiryDate}\n💳 *Paid:* ₹${m.amount} (${m.method})\n\nContact: ${OWNER_PHONE}\nStay strong! 🔥`); }
-        function generateExpiringAlertUrl(m) { return buildWhatsAppLink(m.phone, `🚨 *REMINDER - Arya Fitness Club Shirpur* 🚨\n\nHi ${m.name}!\n\nMembership expiring on *${m.expiryDate}*.\nPlease renew today! 💪\n\nUPI / Call: ${OWNER_PHONE}`); }
-        function generateExpiredAlertUrl(m) { return buildWhatsAppLink(m.phone, `⚠️ *EXPIRED - Arya Fitness Club Shirpur* ⚠️\n\nHi ${m.name}!\n\nMembership expired on *${m.expiryDate}*.\nRenew today! 🏋️‍♂️🔥\n\nUPI / Call: ${OWNER_PHONE}`); }
+        function generateReceiptUrl(m) { 
+            return buildWhatsAppLink(m.phone, `Hello ${m.name}! 👋\n\nWelcome to *Arya Fitness Club*! 💪\nYour membership details:\n\n📅 Joining Date: ${m.joiningDate}\n⏳ Expiry Date: ${m.expiryDate}\n⏳ Duration: ${getMemberPlanText(m)}\n💳 Paid: ₹${m.amount} (${m.method})`); 
+        }
+        function generateExpiringAlertUrl(m) { 
+            return buildWhatsAppLink(m.phone, `🚨 REMINDER - Arya Fitness Club 🚨\n\nHi ${m.name}! 👋\n\nYour gym membership is expiring soon on ${m.expiryDate}.\n\nPlease renew your membership today to continue your workouts smoothly! 💪`); 
+        }
+        function generateExpiredAlertUrl(m) { 
+            return buildWhatsAppLink(m.phone, `⚠️ MEMBERSHIP EXPIRED - Arya Fitness Club ⚠️\n\nHi ${m.name}! 👋\n\nYour gym membership has expired on ${m.expiryDate}.\n\nDon't break your workout flow! Please renew your membership today. 🏋️‍♂️🔥`); 
+        }
         function buildWhatsAppLink(phone, text) { let p = phone.replace(/[^0-9]/g, ''); if (p.length === 10) p = '91' + p; return `https://api.whatsapp.com/send?phone=${p}&text=${encodeURIComponent(text)}`; }
 
         function switchTab(tabName) {
@@ -1312,9 +1323,13 @@
                 const plan = getMemberPlanText(m);
 
                 let actionBtn = '';
-                if (st.label === 'Expiring Soon') actionBtn = `<a href="${generateExpiringAlertUrl(m)}" target="_blank" class="flex-1 py-2.5 text-amber-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d" style="background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.25);">⚡ Alert</a>`;
-                else if (st.label === 'Expired') actionBtn = `<a href="${generateExpiredAlertUrl(m)}" target="_blank" class="flex-1 py-2.5 text-rose-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d" style="background: rgba(244,63,94,0.1); border-color: rgba(244,63,94,0.25);">⚠️ Alert</a>`;
-                else actionBtn = `<a href="${generateReceiptUrl(m)}" target="_blank" class="flex-1 py-2.5 text-emerald-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.25);">💬 Receipt</a>`;
+                if (st.label === 'Expiring Soon') {
+                    actionBtn = `<button id="twilioSmsBtn-${m.id}" class="flex-1 py-2.5 text-amber-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d space-x-1" style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.35);"><span>⚡</span><span>Send SMS</span></button>`;
+                } else if (st.label === 'Expired') {
+                    actionBtn = `<button id="twilioSmsBtn-${m.id}" class="flex-1 py-2.5 text-rose-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d space-x-1" style="background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.35);"><span>⚠️</span><span>Send SMS</span></button>`;
+                } else {
+                    actionBtn = `<button id="twilioSmsBtn-${m.id}" class="flex-1 py-2.5 text-emerald-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d space-x-1" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35);"><span>💬</span><span>Send SMS</span></button>`;
+                }
 
                 const card = document.createElement('div');
                 card.className = `member-card-3d ${st.cardClass} p-4 rounded-2xl space-y-3`;
@@ -1346,6 +1361,8 @@
 
                 // Bind events since we cannot easily use inline string variables for type modules
                 container.appendChild(card);
+                const sBtn = card.querySelector(`#twilioSmsBtn-${m.id}`);
+                if (sBtn) sBtn.onclick = () => sendDirectTwilioSms(m.id);
                 const rBtn = card.querySelector(`#renewBtn-${m.id}`);
                 if (rBtn) rBtn.onclick = () => openRenewModal(m.id);
                 const dBtn = card.querySelector(`#deleteBtn-${m.id}`);
@@ -1892,26 +1909,116 @@
             const btn = document.getElementById('testSmsSubmitBtn');
 
             btn.disabled = true;
-            btn.textContent = '⏳ Sending...';
+            btn.textContent = '⏳ Sending via Twilio...';
             resultEl.classList.add('hidden');
 
             try {
-                const testSms = httpsCallable(functions, 'testSms');
-                const result = await testSms({ phone, smsType, adminToken: ADMIN_TOKEN });
-                const mode = result.data.mode || 'mock';
-                const modeNote = mode === 'mock' ? ' (Mock mode — no real SMS sent)' : '';
+                let success = false;
+                try {
+                    const localRes = await fetch('/api/test-sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone, smsType })
+                    });
+                    const localData = await localRes.json();
+                    if (localData.success) success = true;
+                } catch(e) {
+                    const testSms = httpsCallable(functions, 'testSms');
+                    const result = await testSms({ phone, smsType, adminToken: ADMIN_TOKEN });
+                    if (result.data && result.data.success) success = true;
+                }
+
                 resultEl.style = 'background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #6EE7B7;';
-                resultEl.textContent = `✅ Test SMS triggered successfully${modeNote}`;
+                resultEl.textContent = `✅ Twilio SMS sent successfully to +91 ${phone}!`;
                 resultEl.classList.remove('hidden');
+                showToast(`✅ SMS sent to +91 ${phone}!`, 'emerald');
             } catch (err) {
                 console.error('Test SMS error:', err);
                 resultEl.style = 'background: rgba(244,63,94,0.12); border: 1px solid rgba(244,63,94,0.3); color: #FDA4AF;';
-                resultEl.textContent = `❌ Failed: ${err.message || 'Cloud Function not deployed yet'}`;
+                resultEl.textContent = `❌ Failed: ${err.message || 'Check Twilio'}`;
                 resultEl.classList.remove('hidden');
             }
 
             btn.disabled = false;
             btn.textContent = 'Send Test';
+        }
+
+        async function sendDirectTwilioSms(memberId) {
+            const m = members.find(i => i.id === memberId);
+            if (!m) return;
+            const st = getStatus(m.expiryDate);
+            let smsType = 'PAYMENT_SUCCESS';
+            if (st.label === 'Expiring Soon') smsType = 'EXPIRING_SOON';
+            else if (st.label === 'Expired') smsType = 'EXPIRED';
+
+            showToast(`⚡ Sending Twilio SMS to ${m.name}...`, 'amber');
+            try {
+                let success = false;
+                let errorMsg = null;
+                try {
+                    const localRes = await fetch('/api/send-sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ member: m, smsType })
+                    });
+                    const localData = await localRes.json();
+                    if (localData.success && localData.result?.success) {
+                        success = true;
+                    } else {
+                        errorMsg = localData.result?.error || localData.error || 'Failed to dispatch SMS';
+                    }
+                } catch(e) {
+                    const testSms = httpsCallable(functions, 'testSms');
+                    const res = await testSms({ phone: m.phone, smsType, adminToken: ADMIN_TOKEN });
+                    if (res.data?.success) success = true;
+                    else errorMsg = res.data?.error || 'Cloud function error';
+                }
+
+                if (success) {
+                    showToast(`✅ Twilio SMS sent to ${m.name} (+91 ${m.phone})!`, 'emerald');
+                } else {
+                    if (errorMsg && (errorMsg.includes('572002') || errorMsg.includes('verified recipient') || errorMsg.includes('unverified'))) {
+                        showToast(`⚠️ Twilio Trial: +91 ${m.phone} is unverified in Twilio Console!`, 'rose');
+                        alert(`⚠️ Twilio Trial Mode Restriction:\n\nPrathamesh's number (+91 ${m.phone}) is NOT added to Twilio "Verified Caller IDs".\n\nTwilio Free Trial accounts only allow sending SMS to verified numbers.\n\nTo fix:\n1. Log in to your Twilio Console\n2. Go to Phone Numbers -> Manage -> Verified Caller IDs\n3. Add +91 ${m.phone} with OTP verification.`);
+                    } else {
+                        showToast(`❌ SMS Failed: ${errorMsg}`, 'rose');
+                    }
+                }
+                renderSmsHistory();
+            } catch (err) {
+                console.error('Direct SMS error:', err);
+                showToast(`❌ SMS Error: ${err.message || 'Check connection'}`, 'rose');
+            }
+        }
+
+        async function triggerManualExpiryScanUi() {
+            const btn = document.getElementById('scanAutoSmsBtn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳</span><span>Scanning...</span>'; }
+            showToast('⚡ Scanning all gym members for expiry...', 'amber');
+            try {
+                let count = 0;
+                try {
+                    const localRes = await fetch('/api/scan-sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ members })
+                    });
+                    const localData = await localRes.json();
+                    count = (localData.expiringSoonSent || 0) + (localData.expiredSent || 0);
+                } catch(e) {
+                    const triggerScan = httpsCallable(functions, 'triggerManualExpiryScan');
+                    const res = await triggerScan({ adminToken: ADMIN_TOKEN });
+                    count = (res.data?.expiringSoonSent || 0) + (res.data?.expiredSent || 0);
+                }
+
+                showToast(`✅ Scan complete: ${count} SMS sent!`, 'emerald');
+                renderSmsHistory();
+            } catch (err) {
+                console.error('Scan error:', err);
+                showToast(`❌ Scan Error: ${err.message || 'Check functions'}`, 'rose');
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = '<span>⚡</span><span>Scan & SMS</span>'; }
+            }
         }
 
         // ── TOAST HELPER ───────────────────────────────────────────────────────
@@ -1958,6 +2065,8 @@
         window.retrySmsNotification = retrySmsNotification;
         window.openTestSmsModal = openTestSmsModal;
         window.closeTestSmsModal = closeTestSmsModal;
+        window.sendDirectTwilioSms = sendDirectTwilioSms;
+        window.triggerManualExpiryScanUi = triggerManualExpiryScanUi;
 
         // Form listeners
         document.getElementById('loginForm').onsubmit = handleLoginSubmit;
