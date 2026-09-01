@@ -875,12 +875,12 @@
                 
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">Renewal Duration *</label>
-                    <select id="renewMonths" required class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
-                        <option value="1">1 Month</option>
-                        <option value="2">2 Months</option>
-                        <option value="3">3 Months</option>
-                        <option value="6">6 Months</option>
-                        <option value="12">12 Months (1 Year)</option>
+                    <select id="renewMonths" required onchange="updateRenewAutoAmount()" class="w-full bg-obsidian-950 rounded-xl p-3 text-white focus:outline-none text-xs" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
+                        <option value="1">1 Month (₹1,000)</option>
+                        <option value="2">2 Months (₹2,000)</option>
+                        <option value="3">3 Months (₹3,000)</option>
+                        <option value="6">6 Months (₹6,000)</option>
+                        <option value="12">12 Months (1 Year - ₹12,000)</option>
                     </select>
                 </div>
 
@@ -1504,13 +1504,19 @@
             closeAddMemberModal();
         }
 
+        // Auto-calculate renewal amount: ₹1000 per month (still manually editable)
+        function updateRenewAutoAmount() {
+            const months = parseInt(document.getElementById('renewMonths').value) || 1;
+            document.getElementById('renewAmount').value = months * 1000;
+        }
+
         function openRenewModal(id) {
             const m = members.find(i => i.id === id);
             if (!m) return;
             document.getElementById('renewMemberId').value = id;
             document.getElementById('renewMemberNameLabel').innerText = `Renewing: ${m.name} (+91 ${m.phone})`;
-            document.getElementById('renewAmount').value = '';
             document.getElementById('renewMonths').value = '1';
+            updateRenewAutoAmount();
             document.getElementById('renewPaymentMethod').value = 'UPI / Online';
             const ov = document.getElementById('renewModalOverlay'), sh = document.getElementById('renewModalSheet');
             ov.classList.remove('hidden');
@@ -1534,7 +1540,7 @@
             members = members.map(m => {
                 if (m.id === id) {
                     const ce = parseDMYToDate(m.expiryDate) > new Date() ? parseDMYToDate(m.expiryDate) : new Date();
-                    ce.setMonth(ce.getMonth() + months);
+                    ce.setDate(ce.getDate() + (months * 30));
                     rm = { ...m, expiryDate: formatDateToDMY(ce), amount: amount, method: method, planMonths: months, createdTimestamp: Date.now() };
                     return rm;
                 }
@@ -1553,6 +1559,7 @@
                 }
 
                 // ── SMS: Payment Successful (Renewal) ─────────────────────────
+                showToast(`⚡ Sending Renewal SMS to ${rm.name}...`, 'amber');
                 try {
                     fetch(`${API_BASE}/api/send-sms`, {
                         method: 'POST',
@@ -1571,6 +1578,7 @@
 
             saveMembersAndTransactions();
             closeRenewModal();
+            showToast(`✅ ${rm ? rm.name : 'Member'} renewed successfully! Status: Active`, 'emerald');
         }
 
         async function deleteMember(id) {
@@ -2097,6 +2105,7 @@
         window.onMonthSelectChange = onMonthSelectChange;
         window.filterByStatusAndSwitchTab = filterByStatusAndSwitchTab;
         window.setStatusFilter = setStatusFilter;
+        window.updateRenewAutoAmount = updateRenewAutoAmount;
         window.openRenewModal = openRenewModal;
         window.closeRenewModal = closeRenewModal;
         window.deleteMember = deleteMember;
