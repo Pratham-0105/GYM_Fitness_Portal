@@ -963,10 +963,10 @@
         // Initialize Firebase Functions (asia-south1 = Mumbai)
         const functions = getFunctions(app, "asia-south1");
 
-        // ── SMS: Admin token ─────────────────────────────────────────────────
+        // ── SMS: Admin token & API Config ────────────────────────────────────
         // This token is also set in functions/.env as ADMIN_TOKEN.
-        // It is a simple shared secret; the real 2Factor API key stays server-side.
         const ADMIN_TOKEN = "arya-admin-token-change-me";
+        const API_BASE = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '5000')) ? 'http://localhost:5000' : '';
 
         const OWNER_PHONE = "+917620820352";
         let activeTab = 'dashboard';
@@ -1148,7 +1148,7 @@
             if (lastScan !== todayStr && members && members.length > 0) {
                 console.log('[Auto SMS] Running daily expiry scan...');
                 try {
-                    const res = await fetch('/api/scan-sms', {
+                    const res = await fetch(`${API_BASE}/api/scan-sms`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ members })
@@ -1485,14 +1485,19 @@
 
             // ── SMS: Payment Successful ───────────────────────────────────────
             // Fire and forget — SMS failure must NOT affect payment success.
-            // WhatsApp receipt link continues working independently.
             try {
-                const sendSmsOnMemberSave = httpsCallable(functions, 'sendSmsOnMemberSave');
-                sendSmsOnMemberSave({ member: nm, transaction: tx, adminToken: ADMIN_TOKEN })
-                    .then(result => console.log('[SMS] Payment success SMS triggered:', result.data))
-                    .catch(smsErr => console.warn('[SMS] Payment success SMS failed (payment still saved):', smsErr.message));
+                fetch(`${API_BASE}/api/send-sms`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ member: nm, smsType: 'PAYMENT_SUCCESS' })
+                }).then(r => r.json()).then(data => {
+                    if (data.success) showToast(`✅ Payment SMS sent to ${nm.name}!`, 'emerald');
+                }).catch(() => {
+                    const sendSmsOnMemberSave = httpsCallable(functions, 'sendSmsOnMemberSave');
+                    sendSmsOnMemberSave({ member: nm, transaction: tx, adminToken: ADMIN_TOKEN }).catch(() => {});
+                });
             } catch (smsErr) {
-                console.warn('[SMS] Could not call SMS function (payment still saved):', smsErr.message);
+                console.warn('[SMS] Could not call SMS function:', smsErr.message);
             }
 
             saveMembersAndTransactions();
@@ -1548,14 +1553,19 @@
                 }
 
                 // ── SMS: Payment Successful (Renewal) ─────────────────────────
-                // SMS failure must NOT affect renewal success.
                 try {
-                    const sendSmsOnRenewal = httpsCallable(functions, 'sendSmsOnRenewal');
-                    sendSmsOnRenewal({ member: rm, transaction: tx, adminToken: ADMIN_TOKEN })
-                        .then(result => console.log('[SMS] Renewal SMS triggered:', result.data))
-                        .catch(smsErr => console.warn('[SMS] Renewal SMS failed (renewal still saved):', smsErr.message));
+                    fetch(`${API_BASE}/api/send-sms`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ member: rm, smsType: 'PAYMENT_SUCCESS' })
+                    }).then(r => r.json()).then(data => {
+                        if (data.success) showToast(`✅ Renewal SMS sent to ${rm.name}!`, 'emerald');
+                    }).catch(() => {
+                        const sendSmsOnRenewal = httpsCallable(functions, 'sendSmsOnRenewal');
+                        sendSmsOnRenewal({ member: rm, transaction: tx, adminToken: ADMIN_TOKEN }).catch(() => {});
+                    });
                 } catch (smsErr) {
-                    console.warn('[SMS] Could not call renewal SMS function (renewal still saved):', smsErr.message);
+                    console.warn('[SMS] Could not call renewal SMS function:', smsErr.message);
                 }
             }
 
@@ -1943,7 +1953,7 @@
             try {
                 let success = false;
                 try {
-                    const localRes = await fetch('/api/test-sms', {
+                    const localRes = await fetch(`${API_BASE}/api/test-sms`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ phone, smsType })
@@ -1984,7 +1994,7 @@
                 let success = false;
                 let errorMsg = null;
                 try {
-                    const localRes = await fetch('/api/send-sms', {
+                    const localRes = await fetch(`${API_BASE}/api/send-sms`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ member: m, smsType })
@@ -1996,10 +2006,14 @@
                         errorMsg = localData.result?.error || localData.error || 'Failed to dispatch SMS';
                     }
                 } catch(e) {
-                    const testSms = httpsCallable(functions, 'testSms');
-                    const res = await testSms({ phone: m.phone, smsType, adminToken: ADMIN_TOKEN });
-                    if (res.data?.success) success = true;
-                    else errorMsg = res.data?.error || 'Cloud function error';
+                    try {
+                        const testSms = httpsCallable(functions, 'testSms');
+                        const res = await testSms({ phone: m.phone, smsType, adminToken: ADMIN_TOKEN });
+                        if (res.data?.success) success = true;
+                        else errorMsg = res.data?.error || 'Cloud function error';
+                    } catch (fbErr) {
+                        errorMsg = `Server unreachable. Please make sure node server is running on http://localhost:5000`;
+                    }
                 }
 
                 if (success) {
@@ -2007,7 +2021,7 @@
                 } else {
                     if (errorMsg && (errorMsg.includes('572002') || errorMsg.includes('verified recipient') || errorMsg.includes('unverified'))) {
                         showToast(`⚠️ Twilio Trial: +91 ${m.phone} is unverified in Twilio Console!`, 'rose');
-                        alert(`⚠️ Twilio Trial Mode Restriction:\n\nPrathamesh's number (+91 ${m.phone}) is NOT added to Twilio "Verified Caller IDs".\n\nTwilio Free Trial accounts only allow sending SMS to verified numbers.\n\nTo fix:\n1. Log in to your Twilio Console\n2. Go to Phone Numbers -> Manage -> Verified Caller IDs\n3. Add +91 ${m.phone} with OTP verification.`);
+                        alert(`⚠️ Twilio Trial Mode Restriction:\n\nNumber (+91 ${m.phone}) is NOT added to Twilio "Verified Caller IDs".`);
                     } else {
                         showToast(`❌ SMS Failed: ${errorMsg}`, 'rose');
                     }
@@ -2026,7 +2040,7 @@
             try {
                 let count = 0;
                 try {
-                    const localRes = await fetch('/api/scan-sms', {
+                    const localRes = await fetch(`${API_BASE}/api/scan-sms`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ members })
