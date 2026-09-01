@@ -21,7 +21,7 @@ module.paths.push(path.join(__dirname, 'functions', 'node_modules'));
 const { sendTwilioSMS } = require('./functions/services/twilioProvider');
 const { sendPaymentSuccessSMS, sendExpiringSoonSMS, sendExpiredSMS } = require('./functions/services/smsService');
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const PUBLIC_DIR = __dirname;
 
 const MIME_TYPES = {

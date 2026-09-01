@@ -1,0 +1,16 @@
+{
+  "name": "gym-fitness-portal",
+  "version": "1.0.0",
+  "description": "Arya Fitness Club Gym Portal Web & SMS Backend",
+  "main": "serve.js",
+  "scripts": {
+    "start": "node serve.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "twilio": "^6.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
