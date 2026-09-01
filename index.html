@@ -1137,6 +1137,34 @@
 
             updateStats();
             renderCurrentView();
+            
+            // Trigger automatic SMS scanning once per day
+            setTimeout(autoScanSMS, 3000);
+        }
+
+        async function autoScanSMS() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const lastScan = localStorage.getItem('arya_fitness_last_sms_scan');
+            if (lastScan !== todayStr && members && members.length > 0) {
+                console.log('[Auto SMS] Running daily expiry scan...');
+                try {
+                    const res = await fetch('/api/scan-sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ members })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        console.log(`[Auto SMS] Scan complete. Sent: ${data.expiringSoonSent} Expiring, ${data.expiredSent} Expired.`);
+                        localStorage.setItem('arya_fitness_last_sms_scan', todayStr);
+                        if (data.expiringSoonSent > 0 || data.expiredSent > 0) {
+                            showToast(`🤖 Auto-SMS Sent: ${data.expiringSoonSent + data.expiredSent} expiry alerts!`, 'emerald');
+                        }
+                    }
+                } catch(err) {
+                    console.error('[Auto SMS] Failed:', err);
+                }
+            }
         }
 
         async function saveMembersAndTransactions() {
