@@ -1082,50 +1082,56 @@
         let transactions = [];
         let expenses = [];
 
-        // Helper to load all data from Firestore, seeding with sample data if Firestore is empty
+        // Helper to load all data from Firestore, seeding with sample data only on initial setup
         async function fetchAllData() {
             try {
                 // Fetch Members
                 const membersSnap = await getDocs(collection(db, "members"));
-                if (membersSnap.empty) {
-                    // Seed Firestore with sampleMembers
+                const hasSeededBefore = localStorage.getItem('arya_db_initialized_v2');
+                if (membersSnap.empty && !hasSeededBefore) {
+                    // Seed Firestore with sampleMembers ONLY on very first setup
                     for (const m of sampleMembers) {
                         await setDoc(doc(db, "members", String(m.id)), m);
                     }
-                    members = [...sampleMembers];
+                    members = sampleMembers.map(m => ({ ...m, _docId: String(m.id) }));
+                    localStorage.setItem('arya_db_initialized_v2', 'true');
                 } else {
+                    localStorage.setItem('arya_db_initialized_v2', 'true');
                     members = [];
                     membersSnap.forEach(docSnap => {
-                        members.push(docSnap.data());
+                        const data = docSnap.data();
+                        members.push({ ...data, _docId: docSnap.id });
                     });
                 }
                 // Sort members by ID descending (newest first)
-                members.sort((a, b) => b.id - a.id);
+                members.sort((a, b) => (b.createdTimestamp || b.id || 0) - (a.createdTimestamp || a.id || 0));
 
                 // Fetch Transactions
                 const txSnap = await getDocs(collection(db, "transactions"));
-                if (txSnap.empty) {
+                if (txSnap.empty && !hasSeededBefore) {
                     // Seed Firestore with sampleTransactions
                     for (const t of sampleTransactions) {
                         await setDoc(doc(db, "transactions", String(t.id)), t);
                     }
-                    transactions = [...sampleTransactions];
+                    transactions = sampleTransactions.map(t => ({ ...t, _docId: String(t.id) }));
                 } else {
                     transactions = [];
                     txSnap.forEach(docSnap => {
-                        transactions.push(docSnap.data());
+                        const data = docSnap.data();
+                        transactions.push({ ...data, _docId: docSnap.id });
                     });
                 }
                 // Sort transactions by timestamp descending
-                transactions.sort((a, b) => b.timestamp - a.timestamp);
+                transactions.sort((a, b) => (b.timestamp || b.id || 0) - (a.timestamp || a.id || 0));
 
                 // Fetch Expenses
                 const expSnap = await getDocs(collection(db, "expenses"));
                 expenses = [];
                 expSnap.forEach(docSnap => {
-                    expenses.push(docSnap.data());
+                    const data = docSnap.data();
+                    expenses.push({ ...data, _docId: docSnap.id });
                 });
-                expenses.sort((a, b) => b.timestamp - a.timestamp);
+                expenses.sort((a, b) => (b.timestamp || b.id || 0) - (a.timestamp || a.id || 0));
 
             } catch (err) {
                 console.error("Firestore error loading data: ", err);
@@ -1511,9 +1517,9 @@
         }
 
         function openRenewModal(id) {
-            const m = members.find(i => i.id === id);
+            const m = members.find(i => String(i.id) === String(id) || i._docId === String(id));
             if (!m) return;
-            document.getElementById('renewMemberId').value = id;
+            document.getElementById('renewMemberId').value = m.id;
             document.getElementById('renewMemberNameLabel').innerText = `Renewing: ${m.name} (+91 ${m.phone})`;
             document.getElementById('renewMonths').value = '1';
             updateRenewAutoAmount();
@@ -1531,14 +1537,14 @@
 
         async function handleRenewSubmit(e) {
             e.preventDefault();
-            const id = parseInt(document.getElementById('renewMemberId').value);
-            const months = parseInt(document.getElementById('renewMonths').value);
+            const id = document.getElementById('renewMemberId').value;
+            const months = parseInt(document.getElementById('renewMonths').value) || 1;
             const amount = document.getElementById('renewAmount').value;
             const method = document.getElementById('renewPaymentMethod').value;
 
             let rm = null;
             members = members.map(m => {
-                if (m.id === id) {
+                if (String(m.id) === String(id) || m._docId === String(id)) {
                     const ce = parseDMYToDate(m.expiryDate) > new Date() ? parseDMYToDate(m.expiryDate) : new Date();
                     ce.setDate(ce.getDate() + (months * 30));
                     rm = { ...m, expiryDate: formatDateToDMY(ce), amount: amount, method: method, planMonths: months, createdTimestamp: Date.now() };
@@ -1552,7 +1558,8 @@
                 transactions.unshift(tx);
 
                 try {
-                    await setDoc(doc(db, "members", String(rm.id)), rm);
+                    const docKey = rm._docId || String(rm.id);
+                    await setDoc(doc(db, "members", String(docKey)), rm);
                     await setDoc(doc(db, "transactions", String(tx.id)), tx);
                 } catch (err) {
                     console.error("Firestore save error on renew: ", err);
@@ -1582,21 +1589,41 @@
         }
 
         async function deleteMember(id) {
-            const m = members.find(i => i.id === id);
-            if (confirm(`Delete "${m ? m.name : 'member'}"?`)) {
-                members = members.filter(m => m.id !== id);
-                transactions = transactions.filter(t => t.memberId !== id);
+            const m = members.find(i => String(i.id) === String(id) || i._docId === String(id));
+            const memberName = m ? m.name : 'member';
+            if (confirm(`Delete "${memberName}"?`)) {
+                const targetId = m ? m.id : id;
+                const targetDocId = m && m._docId ? m._docId : String(targetId);
+
+                // Get related transactions before removing
+                const relatedTx = transactions.filter(t => String(t.memberId) === String(targetId));
+
+                // Filter out from local arrays
+                members = members.filter(i => String(i.id) !== String(targetId) && i._docId !== targetDocId);
+                transactions = transactions.filter(t => String(t.memberId) !== String(targetId));
+
+                // Ensure initial seed flag is preserved so deleted members never reappear
+                localStorage.setItem('arya_db_initialized_v2', 'true');
+                saveMembersAndTransactions();
+
                 try {
-                    await deleteDoc(doc(db, "members", String(id)));
-                    // Leave history of transactions intact or remove them:
-                    const relatedTx = transactions.filter(t => t.memberId === id);
-                    for (const tx of relatedTx) {
-                        await deleteDoc(doc(db, "transactions", String(tx.id)));
+                    // Delete from Firestore
+                    await deleteDoc(doc(db, "members", String(targetDocId)));
+                    if (String(targetId) !== String(targetDocId)) {
+                        await deleteDoc(doc(db, "members", String(targetId))).catch(() => {});
                     }
+                    for (const tx of relatedTx) {
+                        const txDocId = tx._docId || String(tx.id);
+                        await deleteDoc(doc(db, "transactions", String(txDocId)));
+                        if (String(tx.id) !== String(txDocId)) {
+                            await deleteDoc(doc(db, "transactions", String(tx.id))).catch(() => {});
+                        }
+                    }
+                    showToast(`🗑️ "${memberName}" deleted successfully`, 'emerald');
                 } catch (err) {
                     console.error("Firestore delete error: ", err);
+                    showToast(`⚠️ Delete error: ${err.message}`, 'rose');
                 }
-                saveMembersAndTransactions();
             }
         }
 
@@ -1681,15 +1708,24 @@
         }
 
         async function deleteExpense(id) {
-            if (confirm('Delete this expense?')) {
-                expenses = expenses.filter(ex => ex.id !== id);
-                try {
-                    await deleteDoc(doc(db, "expenses", String(id)));
-                } catch(e) {
-                    console.error("Firestore delete expense error: ", e);
-                }
+            const ex = expenses.find(i => String(i.id) === String(id) || i._docId === String(id));
+            const exTitle = ex ? (ex.title || 'expense') : 'expense';
+            if (confirm(`Delete "${exTitle}"?`)) {
+                const targetId = ex ? ex.id : id;
+                const targetDocId = ex && ex._docId ? ex._docId : String(targetId);
+                expenses = expenses.filter(e => String(e.id) !== String(targetId) && e._docId !== targetDocId);
                 localStorage.setItem('arya_fitness_expenses_v1', JSON.stringify(expenses));
                 renderExpenseList();
+                try {
+                    await deleteDoc(doc(db, "expenses", String(targetDocId)));
+                    if (String(targetId) !== String(targetDocId)) {
+                        await deleteDoc(doc(db, "expenses", String(targetId))).catch(() => {});
+                    }
+                    showToast('🗑️ Expense deleted', 'emerald');
+                } catch(e) {
+                    console.error("Firestore delete expense error: ", e);
+                    showToast(`⚠️ Delete error: ${e.message}`, 'rose');
+                }
             }
         }
 
@@ -1990,7 +2026,7 @@
         }
 
         async function sendDirectTwilioSms(memberId) {
-            const m = members.find(i => i.id === memberId);
+            const m = members.find(i => String(i.id) === String(memberId) || i._docId === String(memberId));
             if (!m) return;
             const st = getStatus(m.expiryDate);
             let smsType = 'PAYMENT_SUCCESS';
