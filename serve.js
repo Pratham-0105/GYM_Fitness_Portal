@@ -142,6 +142,7 @@ const server = http.createServer(async (req, res) => {
 
       let expiringSoonSent = 0;
       let expiredSent = 0;
+      const updatedMembers = [];
 
       for (const m of members) {
         if (!m.phone || !m.expiryDate) continue;
@@ -158,13 +159,33 @@ const server = http.createServer(async (req, res) => {
         expDate.setHours(0, 0, 0, 0);
 
         const diffDays = Math.round((expDate - today) / (1000 * 60 * 60 * 24));
+        let modified = false;
 
+        // Expiring Soon (0 to 5 days left) - Send ONLY ONCE per this expiry date
         if (diffDays >= 0 && diffDays <= 5) {
-          const r = await sendExpiringSoonSMS(m, null);
-          if (r && r.success) expiringSoonSent++;
-        } else if (diffDays < 0) {
-          const r = await sendExpiredSMS(m, null);
-          if (r && r.success) expiredSent++;
+          if (m.lastExpiringSoonSmsFor !== m.expiryDate) {
+            const r = await sendExpiringSoonSMS(m, null);
+            if (r && r.success) {
+              expiringSoonSent++;
+              m.lastExpiringSoonSmsFor = m.expiryDate;
+              modified = true;
+            }
+          }
+        } 
+        // Expired (less than 0 days) - Send ONLY ONCE per this expiry date
+        else if (diffDays < 0) {
+          if (m.lastExpiredSmsFor !== m.expiryDate) {
+            const r = await sendExpiredSMS(m, null);
+            if (r && r.success) {
+              expiredSent++;
+              m.lastExpiredSmsFor = m.expiryDate;
+              modified = true;
+            }
+          }
+        }
+
+        if (modified) {
+          updatedMembers.push(m);
         }
       }
 
@@ -173,7 +194,8 @@ const server = http.createServer(async (req, res) => {
         success: true,
         scanned: members.length,
         expiringSoonSent,
-        expiredSent
+        expiredSent,
+        updatedMembers
       }));
     } catch (err) {
       console.error('[API Error /scan-sms]:', err);

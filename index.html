@@ -1152,7 +1152,7 @@
             const todayStr = new Date().toISOString().split('T')[0];
             const lastScan = localStorage.getItem('arya_fitness_last_sms_scan');
             if (lastScan !== todayStr && members && members.length > 0) {
-                console.log('[Auto SMS] Running daily expiry scan...');
+                console.log('[Auto SMS] Running daily expiry scan with duplicate prevention...');
                 try {
                     const res = await fetch(`${API_BASE}/api/scan-sms`, {
                         method: 'POST',
@@ -1163,8 +1163,22 @@
                     if (data.success) {
                         console.log(`[Auto SMS] Scan complete. Sent: ${data.expiringSoonSent} Expiring, ${data.expiredSent} Expired.`);
                         localStorage.setItem('arya_fitness_last_sms_scan', todayStr);
+
+                        // Save updated SMS tracking flags to Firestore
+                        if (data.updatedMembers && data.updatedMembers.length > 0) {
+                            for (const um of data.updatedMembers) {
+                                const idx = members.findIndex(m => String(m.id) === String(um.id) || m._docId === String(um.id));
+                                if (idx !== -1) {
+                                    members[idx] = { ...members[idx], ...um };
+                                    const docKey = members[idx]._docId || String(members[idx].id);
+                                    await setDoc(doc(db, "members", String(docKey)), members[idx]).catch(e => console.error(e));
+                                }
+                            }
+                            saveMembersAndTransactions();
+                        }
+
                         if (data.expiringSoonSent > 0 || data.expiredSent > 0) {
-                            showToast(`🤖 Auto-SMS Sent: ${data.expiringSoonSent + data.expiredSent} expiry alerts!`, 'emerald');
+                            showToast(`🤖 Auto-SMS Sent: ${data.expiringSoonSent + data.expiredSent} expiry alert(s)!`, 'emerald');
                         }
                     }
                 } catch(err) {
@@ -1547,7 +1561,7 @@
                 if (String(m.id) === String(id) || m._docId === String(id)) {
                     const ce = parseDMYToDate(m.expiryDate) > new Date() ? parseDMYToDate(m.expiryDate) : new Date();
                     ce.setDate(ce.getDate() + (months * 30));
-                    rm = { ...m, expiryDate: formatDateToDMY(ce), amount: amount, method: method, planMonths: months, createdTimestamp: Date.now() };
+                    rm = { ...m, expiryDate: formatDateToDMY(ce), amount: amount, method: method, planMonths: months, createdTimestamp: Date.now(), lastExpiringSoonSmsFor: null, lastExpiredSmsFor: null };
                     return rm;
                 }
                 return m;
