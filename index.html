@@ -380,12 +380,15 @@
                 <button onclick="toggleHeaderMenu()" id="menuBtn" class="w-9 h-9 flex items-center justify-center rounded-xl bg-obsidian-800 text-slate-300 btn-3d text-lg" title="Menu">
                     ☰
                 </button>
-                <div id="headerMenuDropdown" class="hidden absolute right-0 top-11 w-48 rounded-xl overflow-hidden z-50" style="background: rgba(15,20,40,0.97); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 16px 40px -8px rgba(0,0,0,0.7);">
+                <div id="headerMenuDropdown" class="hidden absolute right-0 top-11 w-52 rounded-xl overflow-hidden z-50" style="background: rgba(15,20,40,0.97); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 16px 40px -8px rgba(0,0,0,0.7);">
                     <div class="px-4 py-2.5 bg-amber-500/10 border-b border-white/5">
                         <p class="text-[9px] text-slate-400 font-extrabold uppercase">Logged in as</p>
                         <p class="text-xs font-black text-amber-300 flex items-center gap-1">👑 Arun Rajput (Admin)</p>
                     </div>
-                    <button onclick="openExpenseTracker(); toggleHeaderMenu()" class="w-full px-4 py-3 text-left text-xs font-bold text-slate-200 flex items-center space-x-2.5 hover:bg-white/5 transition">
+                    <button onclick="switchTab('sms'); toggleHeaderMenu()" class="w-full px-4 py-3 text-left text-xs font-bold text-slate-200 flex items-center space-x-2.5 hover:bg-white/5 transition">
+                        <span class="text-base">📱</span> <span>SMS Automation</span>
+                    </button>
+                    <button onclick="openExpenseTracker(); toggleHeaderMenu()" class="w-full px-4 py-3 text-left text-xs font-bold text-slate-200 flex items-center space-x-2.5 hover:bg-white/5 transition border-t border-white/5">
                         <span class="text-base">💸</span> <span>Expenses</span>
                     </button>
                     <button onclick="handleLogout(); toggleHeaderMenu()" class="w-full px-4 py-3 text-left text-xs font-bold text-rose-400 flex items-center space-x-2.5 hover:bg-white/5 transition border-t border-white/5">
@@ -598,25 +601,19 @@
 
 
     <!-- BOTTOM NAV BAR -->
-    <nav class="fixed bottom-0 left-0 right-0 z-40 bottom-bar-3d px-2 py-2 flex justify-around items-center max-w-lg mx-auto">
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bottom-bar-3d px-4 py-2 flex justify-around items-center max-w-lg mx-auto">
         <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex-1 py-1 flex flex-col items-center justify-center text-amber-400 transition">
             <span class="text-xl leading-none">🏠</span>
             <span class="text-[10px] font-black mt-1">Home</span>
         </button>
 
-        <button onclick="openAddMemberModal()" class="w-14 h-14 gold-gradient text-obsidian-950 font-black rounded-full flex items-center justify-center text-2xl fab-3d -mt-6 border-4 border-obsidian-950" title="Add Member">
+        <button onclick="openAddMemberModal()" class="w-14 h-14 gold-gradient text-obsidian-950 font-black rounded-full flex items-center justify-center text-2xl fab-3d -mt-6 border-4 border-obsidian-950 shadow-lg" title="Add Member">
             ＋
         </button>
 
         <button onclick="switchTab('members')" id="nav-members" class="flex-1 py-1 flex flex-col items-center justify-center text-slate-500 transition">
             <span class="text-xl leading-none">👥</span>
             <span class="text-[10px] font-bold mt-1">Members</span>
-        </button>
-
-        <button onclick="switchTab('sms')" id="nav-sms" class="flex-1 py-1 flex flex-col items-center justify-center text-slate-500 transition relative">
-            <span class="text-xl leading-none">📱</span>
-            <span class="text-[10px] font-bold mt-1">SMS</span>
-            <span id="smsFailedBadge" class="hidden absolute top-0 right-2 w-3 h-3 bg-rose-500 rounded-full border-2 border-obsidian-950"></span>
         </button>
     </nav>
 
