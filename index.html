@@ -761,7 +761,12 @@
             </div>
 
             <div class="space-y-2">
-                <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-300">By Month</h4>
+                <div class="flex items-center justify-between">
+                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-300">By Month</h4>
+                    <button onclick="resetRevenueHistory()" class="px-2.5 py-1 text-[11px] font-bold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl flex items-center gap-1.5 transition btn-3d" title="Reset Revenue to ₹0">
+                        <span>🔄</span> <span>Reset Revenue (₹0)</span>
+                    </button>
+                </div>
                 <div id="monthlyBreakdownContainer" class="space-y-2 max-h-64 overflow-y-auto no-scrollbar">
                 </div>
             </div>
@@ -1279,6 +1284,33 @@
                     <span class="text-base font-black text-cyan-300 relative z-10">₹${mm[mk].total.toLocaleString('en-IN')}</span>`;
                 bc.appendChild(row);
             });
+        }
+
+        async function resetRevenueHistory() {
+            const confirmed = confirm("⚠️ Are you sure you want to reset all revenue history to ₹0?\n\nThis will clear all past payment transaction records from the database.");
+            if (!confirmed) return;
+
+            try {
+                showToast("🔄 Resetting revenue to ₹0...", "amber");
+                transactions = [];
+                localStorage.setItem('arya_fitness_transactions_v8', JSON.stringify([]));
+                localStorage.setItem('arya_tx_seeded_v1', 'true');
+                localStorage.setItem('arya_db_initialized_v2', 'true');
+
+                updateStats();
+                renderRevenueHistoryReport();
+
+                // Delete all transactions from Firestore
+                const txSnap = await getDocs(collection(db, "transactions"));
+                for (const docSnap of txSnap.docs) {
+                    await deleteDoc(doc(db, "transactions", docSnap.id)).catch(() => {});
+                }
+
+                showToast("✅ Revenue history reset to ₹0 successfully!", "emerald");
+            } catch (err) {
+                console.error("Error resetting transactions:", err);
+                showToast(`⚠️ Reset error: ${err.message}`, "rose");
+            }
         }
 
         function generateReceiptUrl(m) { 
@@ -2157,6 +2189,7 @@
         window.closeRenewModal = closeRenewModal;
         window.deleteMember = deleteMember;
         window.deleteExpense = deleteExpense;
+        window.resetRevenueHistory = resetRevenueHistory;
         // SMS function exports
         window.setSmsTypeFilter = setSmsTypeFilter;
         window.setSmsStatusFilter = setSmsStatusFilter;
