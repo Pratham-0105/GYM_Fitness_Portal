@@ -41,7 +41,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace --no-daemon
+          ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tee ../gradle_output.txt
 
       - name: Prepare APK File
         run: |
@@ -56,11 +56,21 @@ jobs:
 
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
-        if: github.ref == 'refs/heads/main'
+        if: success() && github.ref == 'refs/heads/main'
         with:
           tag_name: latest-app
           name: "Arya Fitness Mobile App (Latest)"
           body: "Official Android APK for Arya Fitness Club. Download AryaFitness.apk below and install directly on your Android phone!"
           files: AryaFitness.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Error Log if Build Fails
+        if: failure()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-failure
+          name: "Build Failure Diagnostics"
+          body_path: gradle_output.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
