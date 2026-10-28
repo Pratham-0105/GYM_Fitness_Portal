@@ -1031,98 +1031,41 @@
         function monthsAgo(m, day) { return new Date(now.getFullYear(), now.getMonth() - m, day || 1); }
         function thisMonth(day) { return new Date(now.getFullYear(), now.getMonth(), day); }
 
-        const sampleMembers = [
-            { id: 101, name: 'Viraj Mali',       phone: '8657271010', planMonths: 1,  joiningDate: formatDateToDMY(thisMonth(2)),     expiryDate: formatDateToDMY(daysFromNow(22)), amount: 1200, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 100000 },
-            { id: 102, name: 'Aarav Joshi',       phone: '9823456781', planMonths: 3,  joiningDate: formatDateToDMY(thisMonth(5)),     expiryDate: formatDateToDMY(daysFromNow(55)), amount: 3000, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 200000 },
-            { id: 103, name: 'Pranav Kulkarni',   phone: '9876543211', planMonths: 1,  joiningDate: formatDateToDMY(thisMonth(1)),     expiryDate: formatDateToDMY(daysFromNow(20)), amount: 1200, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 300000 },
-            { id: 201, name: 'Swapnil Patil',     phone: '9823411223', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(1, 11)), expiryDate: formatDateToDMY(daysFromNow(1)),  amount: 1000, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 400000 },
-            { id: 202, name: 'Rohit Sharma',      phone: '9112233445', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(1, 9)),  expiryDate: formatDateToDMY(daysFromNow(2)),  amount: 1200, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 500000 },
-            { id: 203, name: 'Kunal Sawant',      phone: '9223344556', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(1, 7)),  expiryDate: formatDateToDMY(daysFromNow(3)),  amount: 1000, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 600000 },
-            { id: 204, name: 'Nikhil Pawar',      phone: '9334455667', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(1, 5)),  expiryDate: formatDateToDMY(daysFromNow(4)),  amount: 1200, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 700000 },
-            { id: 205, name: 'Tejas Bhosale',     phone: '9445566778', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(1, 3)),  expiryDate: formatDateToDMY(daysFromNow(5)),  amount: 1000, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 800000 },
-            { id: 301, name: 'Rohan Deshmukh',    phone: '9876543210', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(2, 5)),  expiryDate: formatDateToDMY(daysFromNow(-5)),  amount: 1200, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 2000000000 },
-            { id: 302, name: 'Akshay Shinde',     phone: '9123456780', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(2, 1)),  expiryDate: formatDateToDMY(daysFromNow(-10)), amount: 1000, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 3000000000 },
-            { id: 303, name: 'Vishal Thombare',   phone: '9556677889', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(2, 10)), expiryDate: formatDateToDMY(daysFromNow(-18)), amount: 1200, method: 'UPI / Online', photo: '', createdTimestamp: Date.now() - 4000000000 },
-            { id: 304, name: 'Sachin Mane',       phone: '9667788990', planMonths: 1,  joiningDate: formatDateToDMY(monthsAgo(2, 15)), expiryDate: formatDateToDMY(daysFromNow(-25)), amount: 1000, method: 'Cash',         photo: '', createdTimestamp: Date.now() - 5000000000 }
-        ];
-
-        const curMK = getMonthKey(now);
-        const prevMK1 = getMonthKey(monthsAgo(1, 1));
-        const prevMK2 = getMonthKey(monthsAgo(2, 1));
-        const prevMK3 = getMonthKey(monthsAgo(3, 1));
-        const prevMK4 = getMonthKey(monthsAgo(4, 1));
-
-        const sampleTransactions = [
-            { id: 3001, memberId: 101, memberName: 'Viraj Mali',       amount: 1200, method: 'UPI / Online', date: formatDateToDMY(thisMonth(2)),  monthKey: curMK, timestamp: Date.now() - 100000,  type: 'New Join' },
-            { id: 3002, memberId: 102, memberName: 'Aarav Joshi',       amount: 3000, method: 'UPI / Online', date: formatDateToDMY(thisMonth(5)),  monthKey: curMK, timestamp: Date.now() - 200000,  type: 'New Join' },
-            { id: 3003, memberId: 103, memberName: 'Pranav Kulkarni',   amount: 1200, method: 'Cash',         date: formatDateToDMY(thisMonth(1)),  monthKey: curMK, timestamp: Date.now() - 300000,  type: 'New Join' },
-            { id: 3004, memberId: 301, memberName: 'Rohan Deshmukh',    amount: 1200, method: 'UPI / Online', date: formatDateToDMY(thisMonth(3)),  monthKey: curMK, timestamp: Date.now() - 350000,  type: 'Renewal' },
-            { id: 3005, memberId: 999, memberName: 'Aditya More',       amount: 1800, method: 'UPI / Online', date: formatDateToDMY(thisMonth(7)),  monthKey: curMK, timestamp: Date.now() - 380000,  type: 'New Join' },
-            { id: 3010, memberId: 201, memberName: 'Swapnil Patil',     amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(1, 11)), monthKey: prevMK1, timestamp: Date.now() - 400000,  type: 'New Join' },
-            { id: 3011, memberId: 202, memberName: 'Rohit Sharma',      amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(1, 9)),  monthKey: prevMK1, timestamp: Date.now() - 500000,  type: 'New Join' },
-            { id: 3012, memberId: 203, memberName: 'Kunal Sawant',      amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(1, 7)),  monthKey: prevMK1, timestamp: Date.now() - 600000,  type: 'New Join' },
-            { id: 3013, memberId: 204, memberName: 'Nikhil Pawar',      amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(1, 5)),  monthKey: prevMK1, timestamp: Date.now() - 700000,  type: 'New Join' },
-            { id: 3014, memberId: 205, memberName: 'Tejas Bhosale',     amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(1, 3)),  monthKey: prevMK1, timestamp: Date.now() - 800000,  type: 'New Join' },
-            { id: 3015, memberId: 998, memberName: 'Omkar Kadam',       amount: 3000, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(1, 15)), monthKey: prevMK1, timestamp: Date.now() - 850000,  type: 'Renewal' },
-            { id: 3016, memberId: 997, memberName: 'Sahil Jagtap',      amount: 3000, method: 'Cash',         date: formatDateToDMY(monthsAgo(1, 20)), monthKey: prevMK1, timestamp: Date.now() - 880000,  type: 'New Join' },
-            { id: 3020, memberId: 301, memberName: 'Rohan Deshmukh',    amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(2, 5)),  monthKey: prevMK2, timestamp: Date.now() - 2000000000, type: 'New Join' },
-            { id: 3021, memberId: 302, memberName: 'Akshay Shinde',     amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(2, 1)),  monthKey: prevMK2, timestamp: Date.now() - 3000000000, type: 'New Join' },
-            { id: 3022, memberId: 303, memberName: 'Vishal Thombare',   amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(2, 10)), monthKey: prevMK2, timestamp: Date.now() - 4000000000, type: 'New Join' },
-            { id: 3023, memberId: 304, memberName: 'Sachin Mane',       amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(2, 15)), monthKey: prevMK2, timestamp: Date.now() - 5000000000, type: 'New Join' },
-            { id: 3024, memberId: 996, memberName: 'Tushar Parab',      amount: 3000, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(2, 8)),  monthKey: prevMK2, timestamp: Date.now() - 5100000000, type: 'Renewal' },
-            { id: 3025, memberId: 995, memberName: 'Kiran Yadav',       amount: 2000, method: 'Cash',         date: formatDateToDMY(monthsAgo(2, 22)), monthKey: prevMK2, timestamp: Date.now() - 5200000000, type: 'New Join' },
-            { id: 3030, memberId: 994, memberName: 'Rahul Nikam',       amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(3, 2)),  monthKey: prevMK3, timestamp: Date.now() - 7000000000, type: 'New Join' },
-            { id: 3031, memberId: 993, memberName: 'Shubham Gawade',    amount: 1000, method: 'Cash',         date: formatDateToDMY(monthsAgo(3, 8)),  monthKey: prevMK3, timestamp: Date.now() - 7200000000, type: 'New Join' },
-            { id: 3032, memberId: 992, memberName: 'Vaibhav Salunkhe',  amount: 3000, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(3, 14)), monthKey: prevMK3, timestamp: Date.now() - 7400000000, type: 'Renewal' },
-            { id: 3033, memberId: 991, memberName: 'Ajay Deshpande',    amount: 2000, method: 'Cash',         date: formatDateToDMY(monthsAgo(3, 20)), monthKey: prevMK3, timestamp: Date.now() - 7600000000, type: 'New Join' },
-            { id: 3040, memberId: 990, memberName: 'Mahesh Bhosale',    amount: 1200, method: 'Cash',         date: formatDateToDMY(monthsAgo(4, 3)),  monthKey: prevMK4, timestamp: Date.now() - 9000000000, type: 'New Join' },
-            { id: 3041, memberId: 989, memberName: 'Suresh Chavan',     amount: 1200, method: 'UPI / Online', date: formatDateToDMY(monthsAgo(4, 10)), monthKey: prevMK4, timestamp: Date.now() - 9200000000, type: 'New Join' },
-            { id: 3042, memberId: 988, memberName: 'Deepak Raut',       amount: 3000, method: 'Cash',         date: formatDateToDMY(monthsAgo(4, 18)), monthKey: prevMK4, timestamp: Date.now() - 9400000000, type: 'Renewal' }
-        ];
+        const sampleMembers = [];
+        const sampleTransactions = [];
 
         let members = [];
         let transactions = [];
         let expenses = [];
 
-        // Helper to load all data from Firestore, seeding with sample data only on initial setup
+        // Helper to load all data from Firestore
         async function fetchAllData() {
             try {
+                // One-time auto-wipe of old cached demo data from browser storage
+                if (!localStorage.getItem('arya_v3_fresh_start')) {
+                    localStorage.removeItem('arya_fitness_luxury_v8');
+                    localStorage.removeItem('arya_fitness_transactions_v8');
+                    localStorage.removeItem('arya_fitness_expenses_v1');
+                    localStorage.setItem('arya_v3_fresh_start', 'true');
+                }
+
                 // Fetch Members
                 const membersSnap = await getDocs(collection(db, "members"));
-                const hasSeededBefore = localStorage.getItem('arya_db_initialized_v2');
-                if (membersSnap.empty && !hasSeededBefore) {
-                    // Seed Firestore with sampleMembers ONLY on very first setup
-                    for (const m of sampleMembers) {
-                        await setDoc(doc(db, "members", String(m.id)), m);
-                    }
-                    members = sampleMembers.map(m => ({ ...m, _docId: String(m.id) }));
-                    localStorage.setItem('arya_db_initialized_v2', 'true');
-                } else {
-                    localStorage.setItem('arya_db_initialized_v2', 'true');
-                    members = [];
-                    membersSnap.forEach(docSnap => {
-                        const data = docSnap.data();
-                        members.push({ ...data, _docId: docSnap.id });
-                    });
-                }
+                members = [];
+                membersSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    members.push({ ...data, _docId: docSnap.id });
+                });
                 // Sort members by ID descending (newest first)
                 members.sort((a, b) => (b.createdTimestamp || b.id || 0) - (a.createdTimestamp || a.id || 0));
 
                 // Fetch Transactions
                 const txSnap = await getDocs(collection(db, "transactions"));
-                if (txSnap.empty && !hasSeededBefore) {
-                    // Seed Firestore with sampleTransactions
-                    for (const t of sampleTransactions) {
-                        await setDoc(doc(db, "transactions", String(t.id)), t);
-                    }
-                    transactions = sampleTransactions.map(t => ({ ...t, _docId: String(t.id) }));
-                } else {
-                    transactions = [];
-                    txSnap.forEach(docSnap => {
-                        const data = docSnap.data();
-                        transactions.push({ ...data, _docId: docSnap.id });
-                    });
-                }
+                transactions = [];
+                txSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    transactions.push({ ...data, _docId: docSnap.id });
+                });
                 // Sort transactions by timestamp descending
                 transactions.sort((a, b) => (b.timestamp || b.id || 0) - (a.timestamp || a.id || 0));
 
@@ -1137,9 +1080,8 @@
 
             } catch (err) {
                 console.error("Firestore error loading data: ", err);
-                // Fallback to local storage if Firestore fails
-                members = JSON.parse(localStorage.getItem('arya_fitness_luxury_v8')) || sampleMembers;
-                transactions = JSON.parse(localStorage.getItem('arya_fitness_transactions_v8')) || sampleTransactions;
+                members = JSON.parse(localStorage.getItem('arya_fitness_luxury_v8')) || [];
+                transactions = JSON.parse(localStorage.getItem('arya_fitness_transactions_v8')) || [];
                 expenses = JSON.parse(localStorage.getItem('arya_fitness_expenses_v1')) || [];
             }
 
