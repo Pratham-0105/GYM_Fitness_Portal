@@ -30,6 +30,10 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Accept Android SDK licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
       - name: Copy Web Assets to Android
         run: npx cap copy android || true
 
@@ -37,7 +41,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Prepare APK File
         run: |

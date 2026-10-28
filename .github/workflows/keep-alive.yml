@@ -12,3 +12,4 @@ jobs:
       - name: Ping Render Server to Prevent Sleep
         run: |
           curl -s -o /dev/null -w "Status: %{http_code}\n" https://arya-fitness-portal.onrender.com/
+
