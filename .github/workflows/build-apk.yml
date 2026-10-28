@@ -46,6 +46,13 @@ jobs:
           }
           EOF
 
+      - name: Copy Web Assets into Android Assets
+        run: |
+          mkdir -p android/app/src/main/assets/public
+          cp -rf www/* android/app/src/main/assets/public/
+          cp -f capacitor.config.json android/app/src/main/assets/capacitor.config.json
+          ls -la android/app/src/main/assets/public/
+
       - name: Build Android Debug APK
         working-directory: android
         run: |

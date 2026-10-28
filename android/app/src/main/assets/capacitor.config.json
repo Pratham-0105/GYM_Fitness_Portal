@@ -1,0 +1,8 @@
+{
+	"appId": "com.aryafitness.club",
+	"appName": "Arya Fitness",
+	"webDir": "www",
+	"android": {
+		"allowMixedContent": true
+	}
+}
