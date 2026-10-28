@@ -1,0 +1,13 @@
+{
+  "appId": "com.aryafitness.club",
+  "appName": "Arya Fitness",
+  "webDir": "www",
+  "server": {
+    "url": "https://arya-fitness-portal.onrender.com",
+    "cleartext": true,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

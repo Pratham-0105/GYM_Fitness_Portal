@@ -968,7 +968,7 @@
         // ── SMS: Admin token & API Config ────────────────────────────────────
         // This token is also set in functions/.env as ADMIN_TOKEN.
         const ADMIN_TOKEN = "arya-admin-token-change-me";
-        const API_BASE = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '5000')) ? 'http://localhost:5000' : '';
+        const API_BASE = (window.location.hostname === 'localhost' && window.location.port === '5000') ? 'http://localhost:5000' : 'https://arya-fitness-portal.onrender.com';
 
         const OWNER_PHONE = "+917620820352";
         let activeTab = 'dashboard';

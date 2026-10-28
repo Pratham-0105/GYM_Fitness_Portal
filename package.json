@@ -7,6 +7,9 @@
     "start": "node serve.js"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
     "dotenv": "^17.4.2",
     "twilio": "^6.1.0"
   },

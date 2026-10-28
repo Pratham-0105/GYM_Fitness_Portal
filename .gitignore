@@ -2,12 +2,22 @@
 functions/.env
 
 # Node modules
+node_modules/
 functions/node_modules/
+
+# Android build outputs
+android/app/build/
+android/.gradle/
+android/build/
+android/local.properties
+.gradle/
 
 # Firebase debug logs
 firebase-debug.log
 firebase-debug.*.log
 .firebaserc.local
 
-# macOS
+# macOS & OS files
 .DS_Store
+Thumbs.db
+*.zip
