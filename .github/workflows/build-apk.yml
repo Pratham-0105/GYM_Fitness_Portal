@@ -34,8 +34,16 @@ jobs:
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Sync Capacitor Android
-        run: npx cap sync android
+      - name: Ensure Cordova variables file exists
+        run: |
+          mkdir -p android/capacitor-cordova-android-plugins
+          cat << 'EOF' > android/capacitor-cordova-android-plugins/cordova.variables.gradle
+          ext {
+            cdvMinSdkVersion = project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 24
+            cdvPluginPostBuildExtras = []
+            cordovaConfig = [:]
+          }
+          EOF
 
       - name: Build Android Debug APK
         working-directory: android
