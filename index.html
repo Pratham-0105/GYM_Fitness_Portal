@@ -299,6 +299,23 @@
             body * { visibility: hidden; }
         }
     </style>
+    <script>
+        // Instant pre-render authentication check to prevent login screen flicker
+        (function() {
+            try {
+                var isLogged = localStorage.getItem('arya_fitness_logged_in') === 'true' || 
+                               document.cookie.indexOf('arya_fitness_logged_in=true') !== -1;
+                if (isLogged) {
+                    document.documentElement.classList.add('is-authenticated');
+                }
+            } catch(e) {}
+        })();
+    </script>
+    <style>
+        html.is-authenticated #loginScreen {
+            display: none !important;
+        }
+    </style>
 </head>
 <body class="text-slate-100 min-h-screen selection:bg-amber-500 selection:text-black">
 
@@ -339,9 +356,15 @@
                         <span class="absolute left-3.5 text-slate-400 text-sm">🔒</span>
                         <input type="password" id="loginPassword" required placeholder="Enter Password" class="w-full bg-obsidian-950 rounded-xl py-3 pl-10 pr-3 text-white focus:outline-none text-xs font-bold" style="border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 2px 6px 0 rgba(0,0,0,0.3) inset;">
                     </div>
-                    <div class="flex items-center space-x-2 mt-2">
-                        <input type="checkbox" id="showPasswordToggle" onclick="togglePasswordVisibility()" class="rounded border-slate-700 bg-obsidian-950 text-amber-500 focus:ring-amber-500 cursor-pointer">
-                        <label for="showPasswordToggle" class="text-[11px] font-bold text-slate-400 cursor-pointer select-none">Show Password</label>
+                    <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 mt-2 select-none">
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" id="rememberMeToggle" checked class="rounded border-slate-700 bg-obsidian-950 text-amber-500 focus:ring-amber-500 cursor-pointer">
+                            <span>Keep Me Logged In</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" id="showPasswordToggle" onclick="togglePasswordVisibility()" class="rounded border-slate-700 bg-obsidian-950 text-amber-500 focus:ring-amber-500 cursor-pointer">
+                            <span>Show Password</span>
+                        </label>
                     </div>
                 </div>
 
@@ -1728,22 +1751,67 @@
             });
         }
 
-        // ===== AUTH & LOGIN MANAGEMENT =====
-        function checkAuthState() {
-            const isLoggedIn = localStorage.getItem('arya_fitness_logged_in') === 'true';
+        // ===== AUTH & LOGIN MANAGEMENT (Triple-Layer Persistent: localStorage + IndexedDB + Cookie) =====
+        const AuthStorage = {
+            async setLoggedIn(val) {
+                const strVal = val ? 'true' : 'false';
+                try { localStorage.setItem('arya_fitness_logged_in', strVal); } catch(e) {}
+                try { document.cookie = `arya_fitness_logged_in=${strVal}; max-age=315360000; path=/`; } catch(e) {}
+                try {
+                    const db = await AuthStorage.getDB();
+                    const tx = db.transaction('auth', 'readwrite');
+                    tx.objectStore('auth').put(strVal, 'isLoggedIn');
+                } catch(e) {}
+            },
+            async isLoggedIn() {
+                if (localStorage.getItem('arya_fitness_logged_in') === 'true') return true;
+                if (document.cookie.indexOf('arya_fitness_logged_in=true') !== -1) return true;
+                try {
+                    const db = await AuthStorage.getDB();
+                    return new Promise((resolve) => {
+                        const tx = db.transaction('auth', 'readonly');
+                        const req = tx.objectStore('auth').get('isLoggedIn');
+                        req.onsuccess = () => {
+                            const res = req.result === 'true';
+                            if (res) {
+                                try { localStorage.setItem('arya_fitness_logged_in', 'true'); } catch(e) {}
+                            }
+                            resolve(res);
+                        };
+                        req.onerror = () => resolve(false);
+                    });
+                } catch(e) {
+                    return false;
+                }
+            },
+            getDB() {
+                return new Promise((resolve, reject) => {
+                    const req = indexedDB.open('AryaFitnessAuthDB', 1);
+                    req.onupgradeneeded = (e) => {
+                        e.target.result.createObjectStore('auth');
+                    };
+                    req.onsuccess = () => resolve(req.target.result);
+                    req.onerror = () => reject(req.error);
+                });
+            }
+        };
+
+        async function checkAuthState() {
+            const isLoggedIn = await AuthStorage.isLoggedIn();
             const loginScreen = document.getElementById('loginScreen');
             const appHeader = document.querySelector('header');
             const appMain = document.querySelector('main');
             const appNav = document.querySelector('nav');
 
             if (isLoggedIn) {
+                document.documentElement.classList.add('is-authenticated');
                 if (loginScreen) loginScreen.classList.add('hidden');
                 if (appHeader) appHeader.classList.remove('hidden');
                 if (appMain) appMain.classList.remove('hidden');
                 if (appNav) appNav.classList.remove('hidden');
-                // Fetch all data from Firebase upon login
                 fetchAllData();
             } else {
+                document.documentElement.classList.remove('is-authenticated');
                 if (loginScreen) loginScreen.classList.remove('hidden');
                 if (appHeader) appHeader.classList.add('hidden');
                 if (appMain) appMain.classList.add('hidden');
@@ -1751,7 +1819,7 @@
             }
         }
 
-        function handleLoginSubmit(e) {
+        async function handleLoginSubmit(e) {
             e.preventDefault();
             const id = document.getElementById('loginUserId').value.trim();
             const pass = document.getElementById('loginPassword').value.trim();
@@ -1762,20 +1830,20 @@
             const validPass = pass === 'arya123' || pass === 'arunR@2728' || pass === '123';
 
             if (validId && validPass) {
-                localStorage.setItem('arya_fitness_logged_in', 'true');
+                await AuthStorage.setLoggedIn(true);
                 if (errBox) errBox.classList.add('hidden');
                 document.getElementById('loginForm').reset();
-                checkAuthState();
+                await checkAuthState();
                 switchTab('dashboard');
             } else {
                 if (errBox) errBox.classList.remove('hidden');
             }
         }
 
-        function handleLogout() {
+        async function handleLogout() {
             if (confirm('Are you sure you want to logout?')) {
-                localStorage.setItem('arya_fitness_logged_in', 'false');
-                checkAuthState();
+                await AuthStorage.setLoggedIn(false);
+                await checkAuthState();
             }
         }
 
@@ -1785,6 +1853,7 @@
             if (passInput && toggle) {
                 passInput.type = toggle.checked ? 'text' : 'password';
             }
+        }
         }
 
         // ============================================================
