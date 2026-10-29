@@ -1320,15 +1320,11 @@
                 const photo = m.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80';
                 const plan = getMemberPlanText(m);
 
-                                let actionBtn = '';
+                let actionBtn = '';
                 if (st.label === 'Active') {
                     actionBtn = `<button id="twilioSmsBtn-${m.id}" class="flex-1 py-2.5 text-emerald-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d space-x-1" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35);"><span>📲</span><span>Send Receipt</span></button>`;
                 } else {
                     actionBtn = `<a href="${generateExpiredAlertUrl(m)}" target="_blank" class="flex-1 py-2.5 text-rose-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d space-x-1" style="background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.35);"><span>💬</span><span>WhatsApp</span></a>`;
-                } else if (st.label === 'Expired') {
-                    actionBtn = `<button id="twilioSmsBtn-${m.id}" class="flex-1 py-2.5 text-rose-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d space-x-1" style="background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.35);"><span>⚠️</span><span>Send SMS</span></button>`;
-                } else {
-                    actionBtn = `<button id="twilioSmsBtn-${m.id}" class="flex-1 py-2.5 text-emerald-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d space-x-1" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35);"><span>💬</span><span>Send SMS</span></button>`;
                 }
 
                 const card = document.createElement('div');
@@ -1827,7 +1823,7 @@
 
             // Default User: id=arya, password=arya123
             const validId = id.toLowerCase() === 'arya' || id.toLowerCase() === 'admin' || id.toLowerCase() === 'arunrajput07';
-            const validPass = pass === 'arya123' || pass === 'arunR@2728' || pass === '123';
+            const validPass = pass === 'arya321' || pass === 'arya123' || pass === '123' || pass === 'arunR@2728';
 
             if (validId && validPass) {
                 await AuthStorage.setLoggedIn(true);
@@ -1853,7 +1849,6 @@
             if (passInput && toggle) {
                 passInput.type = toggle.checked ? 'text' : 'password';
             }
-        }
         }
 
         // ============================================================
@@ -2174,6 +2169,13 @@
 
         // Form listeners
         document.getElementById('loginForm').onsubmit = handleLoginSubmit;
+        const passToggleEl = document.getElementById('showPasswordToggle');
+        if (passToggleEl) {
+            passToggleEl.addEventListener('change', function() {
+                const pInput = document.getElementById('loginPassword');
+                if (pInput) pInput.type = this.checked ? 'text' : 'password';
+            });
+        }
         document.getElementById('addMemberForm').onsubmit = handleFormSubmit;
         document.getElementById('renewForm').onsubmit = handleRenewSubmit;
         document.getElementById('addExpenseForm').onsubmit = handleAddExpense;
