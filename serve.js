@@ -73,10 +73,10 @@ const server = http.createServer(async (req, res) => {
       console.log(`\n[Twilio API] Sending ${smsType || 'SMS'} to ${member.name} (+91 ${member.phone})...`);
 
       let result;
-      if (smsType === 'EXPIRING_SOON') {
-        result = await sendExpiringSoonSMS(member, null);
-      } else if (smsType === 'EXPIRED') {
-        result = await sendExpiredSMS(member, null);
+      if (smsType === 'EXPIRING_SOON' || smsType === 'EXPIRED') {
+        console.log(`[Twilio API] Skipping ${smsType} for ${member.name} (Policy: Expiry SMS disabled)`);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ success: false, message: 'Expiry SMS is disabled. SMS is only sent to active members on join/renew.' }));
       } else {
         const tx = { id: Date.now(), amount: member.amount || 1000, method: member.method || 'UPI / Online' };
         result = await sendPaymentSuccessSMS(member, tx, null);
@@ -130,78 +130,10 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // --- API ROUTE: /api/scan-sms ---
+  // --- API ROUTE: /api/scan-sms (DISABLED: No auto scan SMS) ---
   if (req.url === '/api/scan-sms' && req.method === 'POST') {
-    try {
-      const data = await parseJsonBody(req);
-      const members = data.members || [];
-      console.log(`\n[Twilio API] Scanning ${members.length} members for expiry alerts...`);
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      let expiringSoonSent = 0;
-      let expiredSent = 0;
-      const updatedMembers = [];
-
-      for (const m of members) {
-        if (!m.phone || !m.expiryDate) continue;
-        
-        const parts = m.expiryDate.split('-');
-        let expDate;
-        if (parts.length === 3) {
-          const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-          const mIdx = MONTHS.indexOf(parts[1]);
-          expDate = mIdx !== -1 ? new Date(parts[2], mIdx, parts[0]) : new Date(parts[2], parts[1]-1, parts[0]);
-        } else {
-          expDate = new Date(m.expiryDate);
-        }
-        expDate.setHours(0, 0, 0, 0);
-
-        const diffDays = Math.round((expDate - today) / (1000 * 60 * 60 * 24));
-        let modified = false;
-
-        // Expiring Soon (0 to 5 days left) - Send ONLY ONCE per this expiry date
-        if (diffDays >= 0 && diffDays <= 5) {
-          if (m.lastExpiringSoonSmsFor !== m.expiryDate) {
-            const r = await sendExpiringSoonSMS(m, null);
-            if (r && r.success) {
-              expiringSoonSent++;
-              m.lastExpiringSoonSmsFor = m.expiryDate;
-              modified = true;
-            }
-          }
-        } 
-        // Expired (less than 0 days) - Send ONLY ONCE per this expiry date
-        else if (diffDays < 0) {
-          if (m.lastExpiredSmsFor !== m.expiryDate) {
-            const r = await sendExpiredSMS(m, null);
-            if (r && r.success) {
-              expiredSent++;
-              m.lastExpiredSmsFor = m.expiryDate;
-              modified = true;
-            }
-          }
-        }
-
-        if (modified) {
-          updatedMembers.push(m);
-        }
-      }
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({
-        success: true,
-        scanned: members.length,
-        expiringSoonSent,
-        expiredSent,
-        updatedMembers
-      }));
-    } catch (err) {
-      console.error('[API Error /scan-sms]:', err);
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ success: false, error: err.message }));
-    }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ success: true, expiringSoonSent: 0, expiredSent: 0, updatedMembers: [] }));
   }
 
   // --- STATIC FILE SERVING ---

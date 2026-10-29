@@ -425,25 +425,20 @@
             </div>
 
             <!-- 3D Analytics Grid -->
-            <div class="grid grid-cols-2 gap-3">
-                <div onclick="filterByStatusAndSwitchTab('ALL')" class="card-3d stat-card stat-gold p-4 rounded-2xl relative">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider relative z-10">Total Members</span>
-                    <p id="dashTotal" class="text-3xl font-black text-white mt-1 relative z-10">0</p>
+            <div class="grid grid-cols-3 gap-2.5">
+                <div onclick="filterByStatusAndSwitchTab('ALL')" class="card-3d stat-card stat-gold p-3 rounded-2xl relative text-center cursor-pointer">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider relative z-10 block">Total</span>
+                    <p id="dashTotal" class="text-2xl font-black text-white mt-1 relative z-10">0</p>
                 </div>
 
-                <div onclick="filterByStatusAndSwitchTab('Active')" class="card-3d stat-card stat-emerald p-4 rounded-2xl relative">
-                    <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider relative z-10">Active</span>
-                    <p id="dashActive" class="text-3xl font-black text-emerald-400 mt-1 relative z-10">0</p>
+                <div onclick="filterByStatusAndSwitchTab('Active')" class="card-3d stat-card stat-emerald p-3 rounded-2xl relative text-center cursor-pointer">
+                    <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider relative z-10 block">Active</span>
+                    <p id="dashActive" class="text-2xl font-black text-emerald-400 mt-1 relative z-10">0</p>
                 </div>
 
-                <div onclick="filterByStatusAndSwitchTab('Expiring Soon')" class="card-3d stat-card stat-amber p-4 rounded-2xl relative">
-                    <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider relative z-10">Expiring Soon</span>
-                    <p id="dashExpiring" class="text-3xl font-black text-amber-400 mt-1 relative z-10">0</p>
-                </div>
-
-                <div onclick="filterByStatusAndSwitchTab('Expired')" class="card-3d stat-card stat-rose p-4 rounded-2xl relative">
-                    <span class="text-[10px] font-bold text-rose-400 uppercase tracking-wider relative z-10">Expired</span>
-                    <p id="dashExpired" class="text-3xl font-black text-rose-400 mt-1 relative z-10">0</p>
+                <div onclick="filterByStatusAndSwitchTab('Expired')" class="card-3d stat-card stat-rose p-3 rounded-2xl relative text-center cursor-pointer">
+                    <span class="text-[9px] font-bold text-rose-400 uppercase tracking-wider relative z-10 block">Expired</span>
+                    <p id="dashExpired" class="text-2xl font-black text-rose-400 mt-1 relative z-10">0</p>
                 </div>
             </div>
 
@@ -520,17 +515,14 @@
             </div>
 
             <!-- Filter Chips -->
-            <div class="flex space-x-2 overflow-x-auto no-scrollbar py-0.5">
-                <button onclick="setStatusFilter('ALL')" id="mfilter-ALL" class="px-4 py-2 rounded-xl text-xs font-black whitespace-nowrap filter-active">
+            <div class="flex space-x-2 py-0.5">
+                <button onclick="setStatusFilter('ALL')" id="mfilter-ALL" class="flex-1 py-2 rounded-xl text-xs font-black text-center filter-active">
                     All (<span id="mcount-ALL">0</span>)
                 </button>
-                <button onclick="setStatusFilter('Active')" id="mfilter-Active" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">
+                <button onclick="setStatusFilter('Active')" id="mfilter-Active" class="flex-1 py-2 rounded-xl text-xs font-bold text-center filter-inactive">
                     Active (<span id="mcount-Active">0</span>)
                 </button>
-                <button onclick="setStatusFilter('Expiring Soon')" id="mfilter-Expiring Soon" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">
-                    Expiring (<span id="mcount-Expiring Soon">0</span>)
-                </button>
-                <button onclick="setStatusFilter('Expired')" id="mfilter-Expired" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap filter-inactive">
+                <button onclick="setStatusFilter('Expired')" id="mfilter-Expired" class="flex-1 py-2 rounded-xl text-xs font-bold text-center filter-inactive">
                     Expired (<span id="mcount-Expired">0</span>)
                 </button>
             </div>
@@ -1089,46 +1081,11 @@
             renderCurrentView();
             
             // Trigger automatic SMS scanning once per day
-            setTimeout(autoScanSMS, 3000);
+            // autoScanSMS disabled per user preference
         }
 
         async function autoScanSMS() {
-            const todayStr = new Date().toISOString().split('T')[0];
-            const lastScan = localStorage.getItem('arya_fitness_last_sms_scan');
-            if (lastScan !== todayStr && members && members.length > 0) {
-                console.log('[Auto SMS] Running daily expiry scan with duplicate prevention...');
-                try {
-                    const res = await fetch(`${API_BASE}/api/scan-sms`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ members })
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        console.log(`[Auto SMS] Scan complete. Sent: ${data.expiringSoonSent} Expiring, ${data.expiredSent} Expired.`);
-                        localStorage.setItem('arya_fitness_last_sms_scan', todayStr);
-
-                        // Save updated SMS tracking flags to Firestore
-                        if (data.updatedMembers && data.updatedMembers.length > 0) {
-                            for (const um of data.updatedMembers) {
-                                const idx = members.findIndex(m => String(m.id) === String(um.id) || m._docId === String(um.id));
-                                if (idx !== -1) {
-                                    members[idx] = { ...members[idx], ...um };
-                                    const docKey = members[idx]._docId || String(members[idx].id);
-                                    await setDoc(doc(db, "members", String(docKey)), members[idx]).catch(e => console.error(e));
-                                }
-                            }
-                            saveMembersAndTransactions();
-                        }
-
-                        if (data.expiringSoonSent > 0 || data.expiredSent > 0) {
-                            showToast(`🤖 Auto-SMS Sent: ${data.expiringSoonSent + data.expiredSent} expiry alert(s)!`, 'emerald');
-                        }
-                    }
-                } catch(err) {
-                    console.error('[Auto SMS] Failed:', err);
-                }
-            }
+            // Disabled: SMS is only sent when a new active member is added or renewed.
         }
 
         async function saveMembersAndTransactions() {
@@ -1143,7 +1100,6 @@
             const expiry = parseDMYToDate(expiryDateStr); expiry.setHours(0,0,0,0);
             const diff = Math.ceil((expiry - today) / 86400000);
             if (diff < 0) return { label: 'Expired', badge: 'badge-expired', cardClass: 'status-expired' };
-            if (diff <= 5) return { label: 'Expiring Soon', badge: 'badge-expiring', cardClass: 'status-expiring' };
             return { label: 'Active', badge: 'badge-active', cardClass: 'status-active' };
         }
 
@@ -1169,7 +1125,6 @@
         function updateStats() {
             const total = members.length;
             const ac = members.filter(m => getStatus(m.expiryDate).label === 'Active').length;
-            const ex = members.filter(m => getStatus(m.expiryDate).label === 'Expiring Soon').length;
             const ed = members.filter(m => getStatus(m.expiryDate).label === 'Expired').length;
             populateMonthSelectorOptions();
 
@@ -1181,12 +1136,10 @@
 
             document.getElementById('dashTotal').innerText = total;
             document.getElementById('dashActive').innerText = ac;
-            document.getElementById('dashExpiring').innerText = ex;
             document.getElementById('dashExpired').innerText = ed;
             document.getElementById('dashRevenue').innerText = '₹' + rev.toLocaleString('en-IN');
             document.getElementById('mcount-ALL').innerText = total;
             document.getElementById('mcount-Active').innerText = ac;
-            document.getElementById('mcount-Expiring Soon').innerText = ex;
             document.getElementById('mcount-Expired').innerText = ed;
 
             const ub = document.getElementById('urgentAlertsBox');
@@ -1344,9 +1297,11 @@
                 const photo = m.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80';
                 const plan = getMemberPlanText(m);
 
-                let actionBtn = '';
-                if (st.label === 'Expiring Soon') {
-                    actionBtn = `<button id="twilioSmsBtn-${m.id}" class="flex-1 py-2.5 text-amber-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d space-x-1" style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.35);"><span>⚡</span><span>Send SMS</span></button>`;
+                                let actionBtn = '';
+                if (st.label === 'Active') {
+                    actionBtn = `<button id="twilioSmsBtn-${m.id}" class="flex-1 py-2.5 text-emerald-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d space-x-1" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35);"><span>📲</span><span>Send Receipt</span></button>`;
+                } else {
+                    actionBtn = `<a href="${generateExpiredAlertUrl(m)}" target="_blank" class="flex-1 py-2.5 text-rose-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d space-x-1" style="background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.35);"><span>💬</span><span>WhatsApp</span></a>`;
                 } else if (st.label === 'Expired') {
                     actionBtn = `<button id="twilioSmsBtn-${m.id}" class="flex-1 py-2.5 text-rose-300 font-extrabold text-xs rounded-xl flex items-center justify-center btn-3d space-x-1" style="background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.35);"><span>⚠️</span><span>Send SMS</span></button>`;
                 } else {
@@ -1398,9 +1353,9 @@
 
         function setStatusFilter(status) {
             activeFilter = status;
-            ['ALL', 'Active', 'Expiring Soon', 'Expired'].forEach(s => {
+            ['ALL', 'Active', 'Expired'].forEach(s => {
                 const btn = document.getElementById(`mfilter-${s}`);
-                if (btn) btn.className = `px-4 py-2 rounded-xl text-xs whitespace-nowrap ${s === status ? 'font-black filter-active' : 'font-bold filter-inactive'}`;
+                if (btn) btn.className = `flex-1 py-2 rounded-xl text-xs text-center ${s === status ? 'font-black filter-active' : 'font-bold filter-inactive'}`;
             });
             renderMembersList();
         }
@@ -2166,15 +2121,10 @@
         document.getElementById('sortBy').onchange = renderMembersList;
 
         // Search options filters
-        ['ALL', 'Active', 'Expiring Soon', 'Expired'].forEach(s => {
+        ['ALL', 'Active', 'Expired'].forEach(s => {
             const btn = document.getElementById(`mfilter-${s}`);
             if (btn) btn.onclick = () => setStatusFilter(s);
         });
-
-        // Quick alert boxes on dashboard
-        document.getElementById('quick-status-Active').onclick = () => filterByStatusAndSwitchTab('Active');
-        document.getElementById('quick-status-Expiring').onclick = () => filterByStatusAndSwitchTab('Expiring Soon');
-        document.getElementById('quick-status-Expired').onclick = () => filterByStatusAndSwitchTab('Expired');
 
         checkAuthState();
         switchTab('dashboard');
