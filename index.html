@@ -1323,7 +1323,10 @@
             container.innerHTML = '';
 
             let filtered = members.filter(m => {
-                const ms = m.name.toLowerCase().includes(sv) || m.phone.includes(sv);
+                const phoneStr = m.phone ? String(m.phone) : '';
+                const codeStr = m.code ? String(m.code).toLowerCase() : '';
+                const batchStr = m.batch ? String(m.batch).toLowerCase() : '';
+                const ms = m.name.toLowerCase().includes(sv) || phoneStr.includes(sv) || codeStr.includes(sv) || batchStr.includes(sv);
                 const st = getStatus(m.expiryDate).label;
                 return ms && (activeFilter === 'ALL' || st === activeFilter);
             });
@@ -1357,8 +1360,12 @@
                         <div class="flex items-center space-x-3">
                             <img src="${photo}" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" style="border: 2px solid rgba(255,255,255,0.08); box-shadow: 0 4px 12px -3px rgba(0,0,0,0.5);">
                             <div>
-                                <h4 class="font-extrabold text-white text-sm leading-tight">${m.name}</h4>
-                                <p class="text-[11px] text-slate-400">+91 ${m.phone}</p>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <h4 class="font-extrabold text-white text-sm leading-tight">${m.name}</h4>
+                                    ${m.code ? `<span class="text-[9px] font-mono font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 px-1.5 py-0.5 rounded">${m.code}</span>` : ''}
+                                    ${m.batch ? `<span class="text-[8px] font-bold text-cyan-400 bg-cyan-400/10 px-1.5 py-0.5 rounded">${m.batch}</span>` : ''}
+                                </div>
+                                <p class="text-[11px] text-slate-400">${m.phone ? '+91 ' + m.phone : '<span class="text-slate-500 italic">No phone</span>'}</p>
                             </div>
                         </div>
                         <span class="px-2.5 py-0.5 text-[9px] font-black rounded-full ${st.badge}">${st.label}</span>
@@ -1372,7 +1379,7 @@
                     </div>
 
                     <div class="flex items-center space-x-2 pl-2 pt-0.5">
-                        <a href="tel:${m.phone}" class="p-2.5 bg-obsidian-900 text-slate-300 rounded-xl btn-3d flex items-center justify-center" title="Call">📞</a>
+                        <a href="${m.phone ? 'tel:' + m.phone : 'javascript:void(0)'}" class="p-2.5 bg-obsidian-900 text-slate-300 rounded-xl btn-3d flex items-center justify-center ${!m.phone ? 'opacity-30 pointer-events-none' : ''}" title="Call">📞</a>
                         ${actionBtn}
                         ${(st.label === 'Expiring Soon' || st.label === 'Expired') ? `<button id="renewBtn-${m.id}" class="px-3.5 py-2.5 text-white font-bold text-xs rounded-xl btn-3d" style="background: linear-gradient(135deg, #10B981, #059669); box-shadow: 0 4px 12px -3px rgba(16,185,129,0.4);">⚡ Renew</button>` : ''}
                         <button id="deleteBtn-${m.id}" class="p-2.5 bg-obsidian-950 text-slate-500 rounded-xl btn-3d hover:text-rose-400 flex items-center justify-center" title="Delete">🗑️</button>
