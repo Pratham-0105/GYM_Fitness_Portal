@@ -2,7 +2,9 @@
   "appId": "com.aryafitness.club",
   "appName": "Arya Fitness",
   "webDir": "www",
+  "backgroundColor": "#050810",
   "android": {
-    "allowMixedContent": true
+    "allowMixedContent": true,
+    "backgroundColor": "#050810"
   }
 }
