@@ -10,19 +10,23 @@ import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        applyDarkSystemBars();
+        applyDarkSystemBarsAndInsets();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        applyDarkSystemBars();
+        applyDarkSystemBarsAndInsets();
         if (getBridge() != null && getBridge().getWebView() != null) {
             WebView webView = getBridge().getWebView();
             WebSettings settings = webView.getSettings();
@@ -37,12 +41,15 @@ public class MainActivity extends BridgeActivity {
         CookieManager.getInstance().flush();
     }
 
-    private void applyDarkSystemBars() {
+    private void applyDarkSystemBarsAndInsets() {
         try {
             Window window = getWindow();
             if (window == null) return;
 
             int obsidianBlack = Color.parseColor("#050810");
+
+            // Allow window background to extend edge-to-edge behind bars for deep luxury black
+            WindowCompat.setDecorFitsSystemWindows(window, false);
 
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -51,6 +58,7 @@ public class MainActivity extends BridgeActivity {
             window.setStatusBarColor(obsidianBlack);
             window.setNavigationBarColor(obsidianBlack);
 
+            // Light icons on status bar and navigation bar
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 WindowInsetsController controller = window.getInsetsController();
                 if (controller != null) {
@@ -66,6 +74,19 @@ public class MainActivity extends BridgeActivity {
                     flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
                 }
                 decorView.setSystemUiVisibility(flags);
+            }
+
+            // CRUCIAL: Pad root content view by system bars and display cutout insets
+            // This guarantees zero overlap on all devices (Motorola, Samsung, Pixel, etc.)
+            View contentView = findViewById(android.R.id.content);
+            if (contentView != null) {
+                ViewCompat.setOnApplyWindowInsetsListener(contentView, (v, windowInsets) -> {
+                    Insets insets = windowInsets.getInsets(
+                        WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
+                    );
+                    v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+                    return WindowInsetsCompat.CONSUMED;
+                });
             }
         } catch (Exception e) {
             // Safe fallback
